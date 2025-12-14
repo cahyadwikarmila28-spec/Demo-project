@@ -96,6 +96,21 @@
             text-align: right;
         }
 
+        .biodata-value {
+            font-size: 1.1rem;
+            /* desktop */
+        }
+
+        /* 📱 Mobile */
+        @media (max-width: 576px) {
+            .biodata-value {
+                font-size: 14px;
+                word-break: break-all;
+                /* biar email tidak keluar layar */
+            }
+        }
+
+
         /* 📱 Mobile Responsive */
         @media (max-width: 576px) {
             .biodata-list {
@@ -317,7 +332,11 @@
                     <li><strong>Tempat, Tanggal Lahir:</strong> <span>Jakarta, 28 Maret 2005</span></li>
                     <li><strong>Alamat:</strong> <span>Jl. Lurah Wiryadrana RT 04 RW 01</span></li>
                     <li><strong>Pendidikan:</strong> <span>S1 Sistem Informasi</span></li>
-                    <li><strong>Email:</strong> <span>cahyadwikarmila28@gmail.com</span></li>
+                    <li>
+                        <strong>Email:</strong>
+                        <span class="biodata-value">cahyadwikarmila28@gmail.com</span>
+                    </li>
+
                     <li><strong>WhatsApp/Telepon:</strong> <span>0896-6629-4701</span></li>
                     <li><strong>Instagram:</strong> <span>Chamyilaa</span></li>
                 </ul>
