@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Karanglewas Kidul | Portal Informasi Geografis</title>
-    
-    <link rel="stylesheet" href="style.css"> 
-    
+
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <style>
         :root {
             --primary-color: #667eea;
@@ -17,46 +19,52 @@
             --text-light: #f4f4f4;
             --yellow-accent: #ffd700;
         }
+
         /* Style untuk About Section agar foto berada di tengah */
         .profile-card {
             background: rgba(255, 255, 255, 0.1);
-            padding: 3rem;
             border-radius: 15px;
+            padding-top: 3rem;
             text-align: center;
             margin: 0 auto 2rem;
-            max-width: 600px; 
+            max-width: 600px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+
         .profile-photo-container {
-            width: 180px; 
+            width: 180px;
             height: 180px;
             margin: 0 auto 2rem;
             border-radius: 50%;
             overflow: hidden;
-            border: 5px solid var(--yellow-accent); 
-            background-color: #333; 
+            border: 5px solid var(--yellow-accent);
+            background-color: #333;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+
         .profile-photo-container img {
             width: 100%;
             height: 100%;
-            object-fit: cover; 
+            object-fit: cover;
         }
+
         .profile-card h3 {
             font-size: 2.5rem;
             color: var(--primary-color);
             margin-bottom: 0.5rem;
             font-weight: 700;
         }
+
         .profile-card p.title {
             font-size: 1.2rem;
-            color: var(--yellow-accent); 
+            color: var(--yellow-accent);
             margin-bottom: 2rem;
             font-weight: 500;
         }
+
         .biodata-list {
             list-style: none;
             text-align: left;
@@ -64,22 +72,52 @@
             max-width: 450px;
             margin: 0 auto 2rem;
         }
+
+        /* Item */
         .biodata-list li {
             padding: 0.8rem 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: space-between;
             font-size: 1.1rem;
+            gap: 1rem;
         }
+
+        /* Label */
         .biodata-list strong {
             color: var(--text-light);
             font-weight: 600;
+            white-space: nowrap;
         }
+
+        /* Value */
         .biodata-list span {
             color: #aaa;
+            text-align: right;
+        }
+
+        /* 📱 Mobile Responsive */
+        @media (max-width: 576px) {
+            .biodata-list {
+                max-width: 100%;
+                padding: 0 1rem;
+            }
+
+            .biodata-list li {
+                flex-direction: column;
+                align-items: flex-start;
+                font-size: 1rem;
+            }
+
+            .biodata-list span {
+                text-align: left;
+                margin-top: 0.3rem;
+                color: #ccc;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="bg-animation">
         <span></span>
@@ -97,22 +135,31 @@
                 <i class="fas fa-map-marked-alt"></i>
                 <span>Karanglewas</span>
             </div>
-            <ul class="nav-links">
-                <li><a href="#beranda" class="nav-link" onclick="showSection('beranda', event)">
-                    <i class="fas fa-home"></i> Beranda
-                </a></li>
-                <li><a href="#peta-desa" class="nav-link" onclick="showSection('peta-desa', event)">
-                    <i class="fas fa-map"></i> Peta Desa
-                </a></li>
-                <li><a href="#peta-kecamatan" class="nav-link" onclick="showSection('peta-kecamatan', event)">
-                    <i class="fas fa-map-marked"></i> Peta Kecamatan
-                </a></li>
-                <li><a href="#tentang" class="nav-link" onclick="showSection('tentang', event)">
-                    <i class="fas fa-info-circle"></i> Tentang
-                </a></li>
+
+            <!-- Burger Menu -->
+            <div class="burger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#beranda" onclick="showSection('beranda', event)">
+                        <i class="fas fa-home"></i> Beranda
+                    </a></li>
+                <li><a href="#peta-desa" onclick="showSection('peta-desa', event)">
+                        <i class="fas fa-map"></i> Peta Desa
+                    </a></li>
+                <li><a href="#peta-kecamatan" onclick="showSection('peta-kecamatan', event)">
+                        <i class="fas fa-map-marked"></i> Peta Kecamatan
+                    </a></li>
+                <li><a href="#tentang" onclick="showSection('tentang', event)">
+                        <i class="fas fa-info-circle"></i> Tentang
+                    </a></li>
             </ul>
         </div>
     </nav>
+
 
     <div class="hero">
         <div class="hero-content">
@@ -151,23 +198,28 @@
     </div>
 
     <div class="container">
-        
+
         <section id="beranda" class="content-section">
             <h2 class="section-title"><i class="fas fa-home"></i> Selamat Datang</h2>
             <p class="welcome-text">
-                Selamat datang di Portal Informasi Geografis Karanglewas Kidul. Platform digital ini dirancang untuk menyediakan akses mudah dan cepat terhadap informasi geografis, data pembangunan, serta kebijakan desa yang transparan dan akuntabel. Kami berkomitmen untuk memanfaatkan teknologi informasi dalam mendukung perencanaan pembangunan yang tepat sasaran dan berkelanjutan.
+                Selamat datang di Portal Informasi Geografis Karanglewas Kidul. Platform digital ini dirancang untuk
+                menyediakan akses mudah dan cepat terhadap informasi geografis, data pembangunan, serta kebijakan desa
+                yang transparan dan akuntabel. Kami berkomitmen untuk memanfaatkan teknologi informasi dalam mendukung
+                perencanaan pembangunan yang tepat sasaran dan berkelanjutan.
             </p>
 
             <div class="cards-grid">
                 <div class="card" onclick="showSection('peta-desa', event)">
                     <i class="fas fa-map"></i>
                     <h3>Peta Desa</h3>
-                    <p>Jelajahi peta interaktif lengkap Desa Karanglewas Kidul dengan informasi detail wilayah dan fasilitas umum</p>
+                    <p>Jelajahi peta interaktif lengkap Desa Karanglewas Kidul dengan informasi detail wilayah dan
+                        fasilitas umum</p>
                 </div>
                 <div class="card" onclick="showSection('peta-kecamatan', event)">
                     <i class="fas fa-globe-asia"></i>
                     <h3>Peta Kecamatan</h3>
-                    <p>Lihat peta komprehensif Kecamatan Karanglewas dan hubungan antar wilayah dalam satu visualisasi</p>
+                    <p>Lihat peta komprehensif Kecamatan Karanglewas dan hubungan antar wilayah dalam satu visualisasi
+                    </p>
                 </div>
                 <div class="card" onclick="showSection('tentang', event)">
                     <i class="fas fa-info-circle"></i>
@@ -181,32 +233,40 @@
                     <i class="fas fa-building"></i> Fasilitas Umum Desa
                 </h3>
                 <div class="cards-grid">
-                    <div class="card" style="background: linear-gradient(135deg, rgba(17, 153, 142, 0.9) 0%, rgba(56, 239, 125, 0.9) 100%);">
+                    <div class="card"
+                        style="background: linear-gradient(135deg, rgba(17, 153, 142, 0.9) 0%, rgba(56, 239, 125, 0.9) 100%);">
                         <i class="fas fa-school"></i>
                         <h3>Pendidikan</h3>
-                        <p>TK, SD/MI, SMP, dan Pondok Pesantren dengan fasilitas memadai untuk pendidikan berkualitas</p>
+                        <p>TK, SD/MI, SMP, dan Pondok Pesantren dengan fasilitas memadai untuk pendidikan berkualitas
+                        </p>
                     </div>
-                    <div class="card" style="background: linear-gradient(135deg, rgba(240, 147, 251, 0.9) 0%, rgba(245, 87, 108, 0.9) 100%);">
+                    <div class="card"
+                        style="background: linear-gradient(135deg, rgba(240, 147, 251, 0.9) 0%, rgba(245, 87, 108, 0.9) 100%);">
                         <i class="fas fa-hospital"></i>
                         <h3>Kesehatan</h3>
-                        <p>BKD (Badan Kesehatan Desa),  Posyandu aktif, dan layanan kesehatan masyarakat</p>
+                        <p>BKD (Badan Kesehatan Desa), Posyandu aktif, dan layanan kesehatan masyarakat</p>
                     </div>
-                    <div class="card" style="background: linear-gradient(135deg, rgba(250, 112, 154, 0.9) 0%, rgba(254, 225, 64, 0.9) 100%);">
+                    <div class="card"
+                        style="background: linear-gradient(135deg, rgba(250, 112, 154, 0.9) 0%, rgba(254, 225, 64, 0.9) 100%);">
                         <i class="fas fa-mosque"></i>
                         <h3>Ibadah</h3>
                         <p>5 Masjid dan 8 Musholla tersebar di seluruh wilayah desa</p>
                     </div>
-                    <div class="card" style="background: linear-gradient(135deg, rgba(48, 207, 208, 0.9) 0%, rgba(51, 8, 103, 0.9) 100%);">
+                    <div class="card"
+                        style="background: linear-gradient(135deg, rgba(48, 207, 208, 0.9) 0%, rgba(51, 8, 103, 0.9) 100%);">
                         <i class="fas fa-store"></i>
                         <h3>Ekonomi</h3>
                         <p>Alfanart dan UMKM yang berkembang pesat</p>
                     </div>
-                    <div class="card" style="background: linear-gradient(135deg, rgba(250, 174, 50, 0.9) 0%, rgba(250, 82, 82, 0.9) 100%);">
+                    <div class="card"
+                        style="background: linear-gradient(135deg, rgba(250, 174, 50, 0.9) 0%, rgba(250, 82, 82, 0.9) 100%);">
                         <i class="fas fa-futbol"></i>
                         <h3>Olahraga</h3>
-                        <p>Lapangan sepak Ekapala, Lapangan Badminton RT 3 RW 6, Lapangan Badminton Karanglewas Kidul</p>
+                        <p>Lapangan sepak Ekapala, Lapangan Badminton RT 3 RW 6, Lapangan Badminton Karanglewas Kidul
+                        </p>
                     </div>
-                    <div class="card" style="background: linear-gradient(135deg, rgba(168, 237, 234, 0.9) 0%, rgba(254, 214, 227, 0.9) 100%);">
+                    <div class="card"
+                        style="background: linear-gradient(135deg, rgba(168, 237, 234, 0.9) 0%, rgba(254, 214, 227, 0.9) 100%);">
                         <i class="fas fa-landmark"></i>
                         <h3>Pemerintahan</h3>
                         <p>Kantor Desa, Balai Desa, dan kantor pelayanan publik lainnya</p>
@@ -216,21 +276,29 @@
 
             <div class="info-box">
                 <h4><i class="fas fa-bullhorn"></i> Informasi Penting</h4>
-                <p>Portal ini merupakan bagian dari komitmen Pemerintah Desa Karanglewas Kidul dalam mewujudkan tata kelola pemerintahan yang baik (good governance) melalui pemanfaatan teknologi informasi. Dengan konsep **"Satu Peta, Satu Data, Satu Kebijakan"**, kami mengintegrasikan seluruh informasi geografis dan data pembangunan untuk menghasilkan kebijakan yang lebih efektif dan tepat sasaran bagi kesejahteraan masyarakat.</p>
+                <p>Portal ini merupakan bagian dari komitmen Pemerintah Desa Karanglewas Kidul dalam mewujudkan tata
+                    kelola pemerintahan yang baik (good governance) melalui pemanfaatan teknologi informasi. Dengan
+                    konsep **"Satu Peta, Satu Data, Satu Kebijakan"**, kami mengintegrasikan seluruh informasi geografis
+                    dan data pembangunan untuk menghasilkan kebijakan yang lebih efektif dan tepat sasaran bagi
+                    kesejahteraan masyarakat.</p>
             </div>
         </section>
 
         <section id="peta-desa" class="content-section">
             <h2 class="section-title"><i class="fas fa-map"></i> Peta Desa Karanglewas Kidul</h2>
             <div class="map-container" style="height: 85vh; padding: 0; background: var(--background-dark);">
-                <iframe src="Peta_Desa/Desa.html" style="width: 100%; height: 100%; border: none; border-radius: 10px; background: white;" title="Peta Desa"></iframe>
+                <iframe src="Peta_Desa/Desa.html"
+                    style="width: 100%; height: 100%; border: none; border-radius: 10px; background: white;"
+                    title="Peta Desa"></iframe>
             </div>
         </section>
 
         <section id="peta-kecamatan" class="content-section">
             <h2 class="section-title"><i class="fas fa-map-marked"></i> Peta Kecamatan Karanglewas</h2>
             <div class="map-container" style="height: 85vh; padding: 0; background: var(--background-dark);">
-                <iframe src="Peta_Kecamatan/Kecamatan.html" style="width: 100%; height: 100%; border: none; border-radius: 10px; background: white;" title="Peta Kecamatan"></iframe>
+                <iframe src="Peta_Kecamatan/Kecamatan.html"
+                    style="width: 100%; height: 100%; border: none; border-radius: 10px; background: white;"
+                    title="Peta Kecamatan"></iframe>
             </div>
         </section>
 
@@ -241,10 +309,10 @@
                 <div class="profile-photo-container">
                     <img src="cahya_profil.jpg.jpeg" alt="Foto Profil Cahya Dwi Karmila">
                 </div>
-                
+
                 <h3>Cahya Dwi Karmila</h3>
                 <p class="title">NIM: 23SA21A171</p>
-                
+
                 <ul class="biodata-list">
                     <li><strong>Tempat, Tanggal Lahir:</strong> <span>Jakarta, 28 Maret 2005</span></li>
                     <li><strong>Alamat:</strong> <span>Jl. Lurah Wiryadrana RT 04 RW 01</span></li>
@@ -254,10 +322,37 @@
                     <li><strong>Instagram:</strong> <span>Chamyilaa</span></li>
                 </ul>
             </div>
+            <div class="tujuan profile-card">
+                <h4 class="">Tujuan Pembuatan Website</h4>
+                <p>Pengembangan website Peta Interaktif Wilayah ini merupakan proyek akhir yang dihasilkan dari
+                    penerapan ilmu pada mata kuliah Sistem Informasi Geografis (SIG). Inti dari proyek ini adalah
+                    menggabungkan teknologi pemetaan mutakhir dengan sistem data geografis agar dapat diakses secara
+                    daring dan efisien.</p>
+                <p>Berikut adalah sasaran utama dari pengembangan portal ini:</p>
+                <div>
+                    <h6>1. Penyajian data spasial Visual</h6>
+                    <p>Menampilkan data geografi wilayah desa dan kecamatan dalam format peta yang dinamis dan
+                        interaktif, sehingga informasi kewilayahan menjadi lebih mudah dicerna dan dijangkau oleh
+                        seluruh lapisan masyarakat.</p>
+                    <h6>2. Implementasi Hasil Analisis QGIS</h6>
+                    <p>Mengubah dan mengintegrasikan produk pemetaan serta hasil analisis yang diolah melalui perangkat
+                        lunak QGIS menjadi sebuah platform web yang memiliki tampilan yang menarik (user-friendly) dan
+                        adaptif (responsive).</p>
+                    <h6>3. Meningkatkan Keterjangkauan Informasi</h6>
+                    <p>Memberikan kemudahan akses terhadap data geografis dan informasi administrasi kewilayahan. Hal
+                        ini sangat penting untuk mendukung kebutuhan dalam sektor riset, proses perencanaan pembangunan,
+                        maupun dasar dalam pengambilan keputusan oleh pihak terkait.</p>
+                    <h6>4. Aplikasi dan Penguasaan Teknologi</h6>
+                    <p>Mengimplementasikan secara nyata seluruh pengetahuan yang telah dipelajari mengenai konsep SIG,
+                        teknologi web mapping, serta praktik pengembangan web modern ke dalam sebuah proyek digital yang
+                        terpadu dan menyeluruh.</p>
+
+                </div>
+            </div>
         </section>
 
-    </div> 
-    
+    </div>
+
     <footer>
         <div style="max-width: 1200px; margin: 0 auto;">
             <p>&copy; 2025 Karanglewas Kidul. Dibuat oleh Cahya Dwi Karmila. All rights reserved.</p>
@@ -266,4 +361,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>

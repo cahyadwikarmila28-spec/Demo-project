@@ -8,6 +8,98 @@
     --yellow-accent: #ffd700;
 }
 
+/* .tujuan {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-top: 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+    h4 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        font-style: bold;
+        color: var(--primary-color);
+    }
+} */
+
+.tujuan {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 32px;
+  /* background-color: #ffffff; */
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  font-family: "Segoe UI", sans-serif;
+  line-height: 1.7;
+}
+
+/* Judul utama */
+.tujuan h4 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 16px;
+  border-left: 6px solid #fff;
+  padding-left: 12px;
+}
+
+/* Paragraf umum */
+.tujuan p {
+  font-size: 15.5px;
+  color: #fff;
+  margin-bottom: 14px;
+  text-align: justify;
+}
+
+/* Container daftar tujuan */
+.tujuan > div {
+  margin-top: 24px;
+}
+
+/* Judul tiap poin tujuan */
+.tujuan h6 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 20px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+}
+
+/* Efek bullet modern */
+.tujuan h6::before {
+  content: "✔";
+  color: #1abc9c;
+  font-size: 14px;
+  margin-right: 8px;
+}
+
+/* Paragraf penjelasan tiap poin */
+.tujuan h6 + p {
+  margin-left: 22px;
+  font-size: 15px;
+  color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tujuan {
+    padding: 24px;
+    margin: 20px;
+  }
+
+  .tujuan h4 {
+    font-size: 20px;
+  }
+
+  .tujuan p {
+    font-size: 14.5px;
+  }
+}
+
+
 /* Gaya Global */
 * {
     margin: 0;
@@ -68,18 +160,23 @@ nav {
     position: sticky;
     top: 0;
     width: 100%;
-    background: color-mix(in srgb, var(--background-dark), transparent 10%); 
+    background: color-mix(in srgb, var(--background-dark), transparent 10%);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     z-index: 1000;
 }
+
+/* Container */
 .nav-container {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
+    position: relative;
 }
+
+/* Logo */
 .logo {
     font-size: 1.5rem;
     font-weight: bold;
@@ -87,33 +184,103 @@ nav {
     display: flex;
     align-items: center;
 }
+
 .logo i {
     margin-right: 0.5rem;
     color: var(--yellow-accent);
 }
+
+/* Navigation Links - Desktop */
 .nav-links {
     list-style: none;
     display: flex;
 }
+
 .nav-links li {
     margin-left: 1.5rem;
 }
+
 .nav-link {
     text-decoration: none;
     color: var(--text-light);
     padding: 0.5rem 0;
-    transition: color 0.3s, border-bottom 0.3s;
     border-bottom: 2px solid transparent;
     display: flex;
     align-items: center;
+    transition: color 0.3s, border-bottom 0.3s;
 }
-.nav-link:hover, .nav-link.active {
-    color: var(--yellow-accent);
-    border-bottom: 2px solid var(--yellow-accent);
-}
+
 .nav-link i {
     margin-right: 0.5rem;
 }
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--yellow-accent);
+    border-bottom: 2px solid var(--yellow-accent);
+}
+
+/* 🍔 Burger Menu */
+.burger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    position: absolute;
+    right: 2rem;
+}
+
+.burger span {
+    width: 26px;
+    height: 3px;
+    background: var(--text-light);
+    margin: 4px 0;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* 📱 Mobile View */
+@media (max-width: 768px) {
+    .burger {
+        display: flex;
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: var(--background-dark);
+        flex-direction: column;
+        align-items: flex-start;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .nav-links.active {
+        max-height: 400px;
+    }
+
+    .nav-links li {
+        margin: 0;
+        width: 100%;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-link {
+        width: 100%;
+        padding: 1rem 2rem;
+        border-bottom: none;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+        background: rgba(255, 255, 255, 0.05);
+        border-bottom: none;
+    }
+}
+
 
 /* --- HERO SECTION --- */
 .hero {

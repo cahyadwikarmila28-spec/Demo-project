@@ -60,3 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
         window.showSection('beranda'); 
     }, 50); 
 });
+
+function toggleMenu() {
+    document.querySelector(".nav-links").classList.toggle("active");
+}
+document.querySelectorAll(".nav-link").forEach(link => {
+    link.addEventListener("click", () => {
+        document.querySelector(".nav-links").classList.remove("active");
+    });
+});
