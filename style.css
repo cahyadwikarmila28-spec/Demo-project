@@ -1,113 +1,756 @@
-/**
- * Portal Informasi Geografis Karanglewas Kidul
- * Script Utama - Menangani Navigasi, Menu Mobile, dan Peta
- */
+/* ============================================
+   KARANGLEWAS KIDUL - PORTAL INFORMASI GEOGRAFIS
+   Style CSS - File Terpisah
+   ============================================ */
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('WebGIS Karanglewas Kidul Dimuat');
+/* --- VARIABEL WARNA --- */
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #0891b2;
+    --accent-color: #f59e0b;
+    --text-dark: #1e293b;
+    --text-light: #334155;
+    --bg-light: #f8fafc;
+    --bg-gradient-start: #eff6ff;
+    --bg-gradient-end: #dbeafe;
+}
 
-    // --- 1. INISIALISASI MENU MOBILE ---
-    const initMobileMenu = () => {
-        const menuBtn = document.querySelector('#mobile-menu');
-        const navLinksContainer = document.querySelector('.nav-links');
-        const navLinks = document.querySelectorAll('.nav-link');
+/* --- RESET & GLOBAL STYLES --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
 
-        if (menuBtn && navLinksContainer) {
-            menuBtn.addEventListener('click', () => {
-                // Toggle class untuk animasi ikon (menjadi X)
-                menuBtn.classList.toggle('is-active');
-                // Toggle class untuk menampilkan daftar menu di mobile
-                navLinksContainer.classList.toggle('mobile-active');
-            });
+::selection {
+    background: var(--primary-color);
+    color: white;
+}
 
-            // Tutup menu secara otomatis jika salah satu link diklik
-            navLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    menuBtn.classList.remove('is-active');
-                    navLinksContainer.classList.remove('mobile-active');
-                });
-            });
-        }
-    };
+body {
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+    color: var(--text-dark);
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+}
 
-    // --- 2. FUNGSI NAVIGASI SECTION ---
-    // Menggunakan window agar fungsi bisa diakses dari atribut onclick di HTML
-    window.showSection = (sectionId, event) => {
-        if (event) event.preventDefault();
+/* --- BACKGROUND ANIMATION --- */
+.bg-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
+    opacity: 0.3;
+}
 
-        const sections = document.querySelectorAll('.content-section');
-        const navLinks = document.querySelectorAll('.nav-link');
-        const hero = document.querySelector('.hero');
-        const stats = document.querySelector('.stats-container');
+.bg-animation span {
+    position: absolute;
+    bottom: -150px;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(37, 99, 235, 0.15);
+    border-radius: 50%;
+    animation: move 15s linear infinite;
+}
 
-        // Logic tampilan: Hero & Stats hanya muncul di Beranda
-        const isHomePage = (sectionId === 'beranda');
-        if (hero) hero.style.display = isHomePage ? 'block' : 'none';
-        if (stats) stats.style.display = isHomePage ? 'block' : 'none';
+.bg-animation span:nth-child(1) { 
+    left: 10%; 
+    animation-delay: 0s; 
+    width: 80px; 
+    height: 80px; 
+    background-color: rgba(37, 99, 235, 0.2); 
+}
 
-        // Sembunyikan semua section, lalu munculkan yang dipilih
-        sections.forEach(s => s.classList.remove('active'));
-        const activeSection = document.getElementById(sectionId);
-        if (activeSection) {
-            activeSection.classList.add('active');
-            // Scroll otomatis ke atas saat pindah menu
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+.bg-animation span:nth-child(2) { 
+    left: 25%; 
+    animation-delay: 3s; 
+    width: 50px; 
+    height: 50px; 
+    background-color: rgba(8, 145, 178, 0.2); 
+}
 
-        // Update status 'active' pada tombol navigasi
-        navLinks.forEach(l => l.classList.remove('active'));
-        const currentLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
-        if (currentLink) currentLink.classList.add('active');
-    };
+.bg-animation span:nth-child(3) { 
+    left: 40%; 
+    animation-delay: 6s; 
+    width: 100px; 
+    height: 100px; 
+    background-color: rgba(245, 158, 11, 0.15); 
+}
 
-    // --- 3. FUNGSI PEMILIHAN DESA (PETA KECAMATAN) ---
-    window.selectVillage = (villageId) => {
-        const iframe = document.getElementById('kecamatan-map');
-        const title = document.getElementById('village-info-title');
-        const content = document.getElementById('village-info-content');
-        const buttons = document.querySelectorAll('.village-btn');
+.bg-animation span:nth-child(4) { 
+    left: 55%; 
+    animation-delay: 9s; 
+    width: 60px; 
+    height: 60px; 
+}
 
-        // Reset semua tombol, beri class active pada yang diklik
-        buttons.forEach(btn => btn.classList.remove('active'));
-        event.currentTarget.classList.add('active');
+.bg-animation span:nth-child(5) { 
+    left: 70%; 
+    animation-delay: 12s; 
+    width: 70px; 
+    height: 70px; 
+    background-color: rgba(37, 99, 235, 0.18); 
+}
 
-        // Database sederhana konten informasi desa
-        const villageData = {
-            'karanglewas-kidul': {
-                title: 'Informasi Desa Karanglewas Kidul',
-                content: 'Desa Karanglewas Kidul adalah desa terbesar di Kecamatan Karanglewas dengan luas 13,4 km². Memiliki fasilitas pendidikan, kesehatan, dan olahraga yang lengkap.',
-                mapUrl: 'Peta_Kecamatan/Kecamatan.html#karanglewas-kidul' // Sesuaikan jika ada file spesifik
-            },
-            'kediri': {
-                title: 'Informasi Desa Kediri',
-                content: 'Desa Kediri terletak di utara Karanglewas Kidul. Dikenal dengan potensi pertanian padi yang sangat produktif dan sistem irigasi teknis.',
-                mapUrl: 'Peta_Kecamatan/Kecamatan.html#kediri'
-            },
-            'pangebatan': {
-                title: 'Informasi Desa Pangebatan',
-                content: 'Desa Pangebatan berada di sisi timur. Masyarakatnya dikenal religius dengan keberadaan beberapa pondok pesantren besar.',
-                mapUrl: 'Peta_Kecamatan/Kecamatan.html#pangebatan'
-            },
-            'tamansari': {
-                title: 'Informasi Desa Tamansari',
-                content: 'Desa Tamansari berada di sisi barat dengan topografi yang mendukung sektor perkebunan dan udara yang relatif sejuk.',
-                mapUrl: 'Peta_Kecamatan/Kecamatan.html#tamansari'
-            }
-        };
+.bg-animation span:nth-child(6) { 
+    left: 85%; 
+    animation-delay: 4s; 
+    width: 90px; 
+    height: 90px; 
+}
 
-        // Update Teks Informasi
-        if (villageData[villageId]) {
-            title.innerHTML = `<i class="fas fa-info-circle"></i> ${villageData[villageId].title}`;
-            content.innerText = villageData[villageId].content;
-            
-            // Opsional: Ganti URL iframe jika Anda punya file peta per desa
-            // iframe.src = villageData[villageId].mapUrl;
-        }
-    };
+.bg-animation span:nth-child(7) { 
+    left: 95%; 
+    animation-delay: 7s; 
+    width: 55px; 
+    height: 55px; 
+}
 
-    // --- 4. MENJALANKAN FUNGSI ---
-    initMobileMenu();
+@keyframes move {
+    0% { 
+        transform: translateY(0) rotate(0deg); 
+        opacity: 0; 
+    }
+    50% { 
+        opacity: 0.5; 
+    }
+    100% { 
+        transform: translateY(-1200px) rotate(720deg); 
+        opacity: 0; 
+    }
+}
 
-    // Set tampilan awal secara default ke Beranda
-    showSection('beranda');
-});
+/* --- NAVIGATION --- */
+nav {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    z-index: 1000;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logo i {
+    color: var(--accent-color);
+    font-size: 1.8rem;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-light);
+    padding: 0.7rem 1.2rem;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    background: var(--bg-light);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.nav-link.active {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+.nav-link i {
+    font-size: 1.1rem;
+}
+
+/* --- HERO SECTION --- */
+.hero {
+    background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+    padding: 8rem 2rem 4rem;
+    text-align: center;
+    margin-bottom: 3rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>');
+    opacity: 0.5;
+}
+
+.hero-content {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    color: white;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    font-weight: 800;
+}
+
+.hero-tagline {
+    font-size: 1.5rem;
+    color: white;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-logo {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 2rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* --- STATS SECTION --- */
+.stats-container {
+    max-width: 1200px;
+    margin: -4rem auto 3rem;
+    padding: 0 2rem;
+    z-index: 10;
+    position: relative;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card {
+    text-align: center;
+    color: var(--text-dark);
+    padding: 1.5rem;
+    border-radius: 15px;
+    background: linear-gradient(135deg, var(--bg-light) 0%, white 100%);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.15);
+    border-color: var(--primary-color);
+}
+
+.stat-card i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 0.8rem;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--secondary-color);
+    line-height: 1;
+    margin: 0.5rem 0;
+}
+
+.stat-label {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+/* --- MAIN CONTENT & SECTIONS --- */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem 3rem;
+}
+
+.content-section {
+    border-radius: 20px;
+    margin-bottom: 3rem;
+    background: white;
+    padding: 3rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.content-section:not(.active) {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+    text-align: center;
+    padding-bottom: 1rem;
+    border-bottom: 4px solid var(--accent-color);
+    display: inline-block;
+    width: 100%;
+}
+
+.section-title i {
+    margin-right: 0.8rem;
+    color: var(--accent-color);
+}
+
+/* --- INFO CARDS --- */
+.info-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.info-detail-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.info-detail-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    border-color: var(--primary-color);
+}
+
+.info-detail-card h4 {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+}
+
+.info-detail-card p {
+    color: var(--text-light);
+    line-height: 1.8;
+}
+
+/* --- CARDS GRID --- */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: linear-gradient(135deg, var(--bg-light) 0%, white 100%);
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.card:hover::before {
+    left: 100%;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-color);
+}
+
+.card i {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.8rem;
+    color: var(--text-dark);
+    font-weight: 700;
+}
+
+.card p {
+    font-size: 1rem;
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/* Card dengan gradient background */
+.card[style*="background: linear-gradient"] {
+    color: white;
+    border: none;
+}
+
+.card[style*="background: linear-gradient"] i {
+    color: white;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.card[style*="background: linear-gradient"] h3 {
+    color: white;
+}
+
+.card[style*="background: linear-gradient"] p {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* --- VILLAGE SELECTOR --- */
+.village-selector {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.village-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.village-btn {
+    background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+    color: white;
+    padding: 1.2rem;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.village-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+
+.village-btn.active {
+    background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+}
+
+.village-btn i {
+    font-size: 1.2rem;
+}
+
+/* --- INFO BOX --- */
+.info-box {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(8, 145, 178, 0.1) 100%);
+    padding: 2rem;
+    border-radius: 15px;
+    border-left: 5px solid var(--primary-color);
+    margin: 2rem 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.info-box h4 {
+    color: var(--primary-color);
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-box p {
+    color: var(--text-light);
+    line-height: 1.8;
+}
+
+/* --- MAP CONTAINER --- */
+.map-container {
+    background: white;
+    border: 2px solid var(--bg-light);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* --- FOOTER --- */
+footer {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    padding: 2rem;
+    text-align: center;
+    border-top: 3px solid var(--primary-color);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+    margin-top: 3rem;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - MEDIA QUERIES
+   ============================================ */
+
+/* Tablet & Laptop Kecil */
+@media (max-width: 1024px) {
+    .hero h1 {
+        font-size: 3rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile & Tablet */
+@media (max-width: 768px) {
+    .nav-container {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
+    .logo {
+        font-size: 1.3rem;
+    }
+    
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .nav-link {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .hero {
+        padding: 5rem 1.5rem 3rem;
+        margin-bottom: 2rem;
+    }
+    
+    .hero h1 {
+        font-size: 2.2rem;
+    }
+    
+    .hero-tagline {
+        font-size: 1.2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .hero-logo {
+        width: 120px;
+        height: 120px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-container {
+        margin: -3rem auto 2rem;
+        padding: 0 1rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        padding: 1.5rem;
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .stat-card i {
+        font-size: 2rem;
+    }
+    
+    .container {
+        padding: 0 1rem 2rem;
+    }
+    
+    .content-section {
+        padding: 2rem 1.5rem;
+        border-radius: 15px;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .cards-grid,
+    .info-card-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .card {
+        padding: 1.5rem;
+    }
+    
+    .card i {
+        font-size: 2.5rem;
+    }
+    
+    .card h3 {
+        font-size: 1.3rem;
+    }
+    
+    .village-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .village-btn {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+}
+
+/* Mobile Kecil */
+@media (max-width: 480px) {
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+    
+    .hero-tagline {
+        font-size: 1rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+    
+    .nav-link {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.8rem;
+    }
+    
+    .logo {
+        font-size: 1.1rem;
+    }
+    
+    .info-detail-card,
+    .card {
+        padding: 1.2rem;
+    }
+}
+
+/* Interaktivitas untuk perangkat touch */
+@media (hover: none) and (pointer: coarse) {
+    .card:active {
+        transform: scale(0.98);
+    }
+    
+    .nav-link:active {
+        transform: scale(0.95);
+    }
+    
+    .village-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .stat-card:active {
+        transform: scale(0.98);
+    }
+}
