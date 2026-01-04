@@ -371,12 +371,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('Semua fitur telah diperbarui dan diinisialisasi! ✓');
 });
-
-function toggleMenu() {
-    document.querySelector(".nav-links").classList.toggle("active");
-}
-document.querySelectorAll(".nav-link").forEach(link => {
-    link.addEventListener("click", () => {
-        document.querySelector(".nav-links").classList.remove("active");
-    });
-});
