@@ -1,4 +1,4 @@
-<!doctype html>
+<!-- <!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -921,4 +921,260 @@
         }
         </script>        
     </body>
+</html> -->
+
+<!-- TERBARU -->
+ <!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <title>WebGIS Desa Kediri - Hybrid Solid Theme</title>
+    
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+    <link rel="stylesheet" href="css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --primary: #6d28d9; --dark: #0f172a; --shadow: 0 8px 25px rgba(0,0,0,0.5); }
+        
+        html, body, #map { width: 100%; height: 100%; padding: 0; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; background: #000; }
+
+        /* UI HEADER */
+        .ui-header {
+            position: absolute; top: 20px; left: 20px; right: 20px;
+            display: flex; align-items: center; gap: 12px; z-index: 3000; pointer-events: none;
+        }
+        .search-container {
+            background: #ffffff; border-radius: 12px; box-shadow: var(--shadow);
+            display: flex; align-items: center; padding: 0 18px;
+            flex-grow: 1; max-width: 450px; pointer-events: auto; position: relative;
+            border: 2px solid #e2e8f0;
+        }
+        .search-container input { 
+            border: none; outline: none; width: 100%; padding: 16px 0; 
+            font-size: 14px; font-weight: 700; color: #1e293b;
+        }
+        
+        .results-box {
+            position: absolute; top: 68px; left: 0; right: 0; background: #ffffff;
+            border-radius: 12px; max-height: 300px; overflow-y: auto; box-shadow: var(--shadow);
+            display: none; border: 2px solid #e2e8f0; z-index: 3001;
+        }
+        .res-item { 
+            padding: 14px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; 
+            font-size: 13px; font-weight: 700; border-bottom: 1px solid #f1f5f9; color: #334155;
+        }
+        .res-item:hover { background: #f5f3ff; color: var(--primary); }
+
+        .btn-menu {
+            background: var(--dark); color: white; border: none; width: 56px; height: 56px;
+            border-radius: 12px; box-shadow: var(--shadow); cursor: pointer; pointer-events: auto; font-size: 18px;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: absolute; top: 88px; left: 20px; width: 320px;
+            background: #ffffff; border-radius: 16px; box-shadow: var(--shadow);
+            z-index: 2500; display: none; flex-direction: column; overflow: hidden; border: 2px solid #e2e8f0;
+        }
+        .sidebar.active { display: flex; }
+        .sidebar-header { padding: 18px; background: var(--dark); color: white; font-weight: 800; font-size: 15px; }
+        .sidebar-body { padding: 15px; max-height: 55vh; overflow-y: auto; }
+
+        .layer-item {
+            display: flex; align-items: center; padding: 12px; margin-bottom: 8px;
+            border-radius: 10px; background: #f8fafc; border: 2px solid #f1f5f9; cursor: pointer;
+        }
+        .layer-item label { flex: 1; display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 800; cursor: pointer; }
+
+        /* ICON PETA */
+        .map-icon { text-align: center; transition: transform 0.3s; transform: scale(0); opacity: 0; }
+        .zoom-active { transform: scale(1); opacity: 1; }
+        .map-icon i { 
+            font-size: 26px; 
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+            -webkit-text-stroke: 1.5px white; 
+        }
+
+        .compass {
+            position: absolute; top: 20px; right: 20px; z-index: 2000;
+            background: white; width: 60px; height: 60px; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            box-shadow: var(--shadow); border: 3px solid var(--dark);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ui-header">
+        <div class="search-container">
+            <i class="fas fa-search" style="color:#64748b; margin-right:12px"></i>
+            <input type="text" id="main-search" placeholder="Cari di Desa Kediri..." autocomplete="off">
+            <div id="search-results" class="results-box"></div>
+        </div>
+        <button class="btn-menu" onclick="toggleSidebar()"><i class="fas fa-layer-group"></i></button>
+    </div>
+
+    <div class="compass">
+        <span style="color:red; font-size:11px; font-weight:900;">U</span>
+        <i class="fas fa-location-arrow" id="compass-needle" style="transform: rotate(-45deg); color: #0f172a;"></i>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">Panel Lapisan</div>
+        <div class="sidebar-body">
+            <p style="font-size: 10px; font-weight: 800; color: #64748b; margin-bottom: 10px; text-transform: uppercase;">Peta Dasar</p>
+            <div class="layer-item" onclick="changeBase('hybrid')">
+                <input type="radio" name="bmap" id="rad-hyb" checked> <label for="rad-hyb"><i class="fas fa-globe"></i> Satelit Hybrid (Label)</label>
+            </div>
+            <div class="layer-item" onclick="changeBase('sat')">
+                <input type="radio" name="bmap" id="rad-sat"> <label for="rad-sat"><i class="fas fa-satellite"></i> Satelit Polos</label>
+            </div>
+            <div class="layer-item" onclick="changeBase('map')">
+                <input type="radio" name="bmap" id="rad-map"> <label for="rad-map"><i class="fas fa-map-marked"></i> Jalan</label>
+            </div>
+            <hr style="border: 0; border-top: 2px solid #f1f5f9; margin: 15px 0;">
+            <p style="font-size: 10px; font-weight: 800; color: #64748b; margin-bottom: 10px; text-transform: uppercase;">Data Desa</p>
+            <div id="layer-container"></div>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="js/leaflet.js"></script>
+    <script src="js/L.Control.Locate.min.js"></script>
+    <script src="js/qgis2web_expressions.js"></script>
+
+    <script src="data/DusunKediri_3.js"></script>
+    <script src="data/Sungai_4.js"></script>
+    <script src="data/Jalan_5.js"></script>
+    <script src="data/Rel_6.js"></script>
+    <script src="data/TempatIbadah_7.js"></script>
+    <script src="data/Search_8.js"></script>
+    <script src="data/Kesehatan_9.js"></script>
+    <script src="data/Makam_10.js"></script>
+    <script src="data/Pendidikan_11.js"></script>
+    <script src="data/Pemerintahan_12.js"></script>
+
+    <script>
+        var map = L.map('map', { zoomControl: false, maxZoom: 28 }).setView([-7.447, 109.213], 15);
+        
+        map.createPane('topIcons');
+        map.getPane('topIcons').style.zIndex = 700;
+
+        // Pilihan Basemap
+        var gHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}').addTo(map);
+        var gSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}');
+        var gMap = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}');
+
+        function changeBase(mode) {
+            map.removeLayer(gHybrid); map.removeLayer(gSat); map.removeLayer(gMap);
+            if(mode==='hybrid') map.addLayer(gHybrid);
+            else if(mode==='sat') map.addLayer(gSat);
+            else map.addLayer(gMap);
+        }
+
+        var searchDatabase = [];
+
+        function addLayerFinal(data, name, icon, color, isPoint) {
+            if (typeof data === 'undefined') return;
+
+            var lyr = L.geoJson(data, {
+                pane: isPoint ? 'topIcons' : 'overlayPane',
+                style: { 
+                    color: (name === 'Jalan') ? '#ffffff' : color, 
+                    weight: (name === 'Jalan') ? 3 : 4,
+                    fillOpacity: 0.7, // Dibuat lebih solid (tidak terlalu transparan)
+                    fillColor: color 
+                },
+                pointToLayer: function(f, latlng) {
+                    if(!isPoint) return;
+                    var label = f.properties.Nama || f.properties.Name || f.properties['Nama Sekol'] || name;
+                    searchDatabase.push({ name: label, latlng: latlng, icon: icon });
+
+                    return L.marker(latlng, {
+                        icon: L.divIcon({
+                            className: 'map-icon', 
+                            html: `<i class="fas ${icon}" style="color:${color}"></i>`,
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 15]
+                        })
+                    });
+                },
+                onEachFeature: function(f, l) {
+                    var popName = f.properties.Nama || f.properties.Name || f.properties['Nama Dusun'] || name;
+                    l.bindPopup(`<div style="font-family:'Plus Jakarta Sans'; font-weight:700; padding:5px"><b>${name}</b><br>${popName}</div>`);
+                    
+                    if(!isPoint && f.properties['Nama Dusun']) {
+                        searchDatabase.push({ name: f.properties['Nama Dusun'], latlng: l.getBounds().getCenter(), icon: 'fa-map-marked-alt' });
+                    }
+                }
+            }).addTo(map);
+
+            var row = document.createElement('div');
+            row.className = 'layer-item';
+            row.innerHTML = `<input type="checkbox" checked onchange="if(this.checked) map.addLayer(window['l_${name.replace(/\s/g, '')}']); else map.removeLayer(window['l_${name.replace(/\s/g, '')}']);">
+                             <label><i class="fas ${icon}" style="color:${color}"></i> ${name}</label>`;
+            document.getElementById('layer-container').appendChild(row);
+            window['l_'+name.replace(/\s/g, '')] = lyr;
+        }
+
+        // --- RENDER DENGAN WARNA BARU (UNGU & SLATE) ---
+        addLayerFinal(json_DusunKediri_3, 'Batas Dusun', 'fa-draw-polygon', '#5b21b6', false); // Ungu Tua Solid
+        addLayerFinal(json_Sungai_4, 'Sungai', 'fa-water', '#0ea5e9', false); 
+        addLayerFinal(json_Jalan_5, 'Jalan', 'fa-road', '#ffffff', false); 
+        addLayerFinal(json_Rel_6, 'Rel Kereta', 'fa-train', '#0f172a', false); 
+        
+        addLayerFinal(json_TempatIbadah_7, 'Tempat Ibadah', 'fa-mosque', '#047857', true); 
+        addLayerFinal(json_Pemerintahan_12, 'Kantor Desa', 'fa-university', '#1d4ed8', true); 
+        addLayerFinal(json_Pendidikan_11, 'Sekolah', 'fa-graduation-cap', '#7c3aed', true); 
+        addLayerFinal(json_Kesehatan_9, 'Kesehatan', 'fa-plus-circle', '#be123c', true); 
+        addLayerFinal(json_Makam_10, 'Makam', 'fa-monument', '#334155', true);
+
+        // SEARCH
+        var sInp = document.getElementById('main-search');
+        var sRes = document.getElementById('search-results');
+
+        sInp.addEventListener('input', function() {
+            var val = this.value.toLowerCase();
+            sRes.innerHTML = '';
+            if(val.length < 1) { sRes.style.display = 'none'; return; }
+            
+            var matches = searchDatabase.filter(i => i.name.toLowerCase().includes(val)).slice(0, 8);
+            if(matches.length > 0) {
+                sRes.style.display = 'block';
+                matches.forEach(m => {
+                    var d = document.createElement('div');
+                    d.className = 'res-item';
+                    d.innerHTML = `<i class="fas ${m.icon}"></i> ${m.name}`;
+                    d.onclick = function() {
+                        map.flyTo(m.latlng, 19);
+                        L.popup().setLatLng(m.latlng).setContent("<b>" + m.name + "</b>").openOn(map);
+                        sRes.style.display = 'none';
+                        sInp.value = m.name;
+                    };
+                    sRes.appendChild(d);
+                });
+            } else { sRes.style.display = 'none'; }
+        });
+
+        function updateIconVisibility() {
+            var z = map.getZoom();
+            document.querySelectorAll('.map-icon').forEach(i => {
+                if (z >= 16) i.classList.add('zoom-active');
+                else i.classList.remove('zoom-active');
+            });
+        }
+        map.on('zoomend', updateIconVisibility);
+        updateIconVisibility(); 
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+        L.control.locate({ position: 'bottomright' }).addTo(map);
+    </script>
+</body>
 </html>
