@@ -370,4 +370,8 @@ document.addEventListener('DOMContentLoaded', () => {
     animateCounters();
 
     console.log('Semua fitur telah diperbarui dan diinisialisasi! ✓');
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> 0854498902de7b876128f6782805543b2e974e97

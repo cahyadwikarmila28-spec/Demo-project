@@ -1,0 +1,1 @@
+var json_Pemerintahan_9 = {"type":"FeatureCollection","name":"Pemerintahan_9","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[{"type":"Feature","properties":{"id":"1","Nama":"Kantor Balai Desa Tamansari","Searchkey":"Kantor Balai Desa Tamansari"},"geometry":{"type":"Point","coordinates":[109.189475040867848,-7.433861649682973]}}]}

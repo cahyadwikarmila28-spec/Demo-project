@@ -1,0 +1,1 @@
+var json_Pemerintahan_12 = {"type":"FeatureCollection","name":"Pemerintahan_12","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[{"type":"Feature","properties":{"id":"2","Nama":"Kantor Keapala Desa Pangebatan","Name":"Kantor Keapala Desa Pangebatan"},"geometry":{"type":"Point","coordinates":[109.209141039671124,-7.436017276216934]}}]}
