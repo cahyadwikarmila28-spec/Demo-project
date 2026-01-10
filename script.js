@@ -133,25 +133,25 @@ document.addEventListener('DOMContentLoaded', () => {
             name: 'Desa Karanglewas Kidul',
             title: 'Informasi Desa Karanglewas Kidul',
             content: 'Desa Karanglewas Kidul adalah desa terbesar di Kecamatan Karanglewas dengan luas 13,4 km². Desa ini memiliki 5.206 penduduk yang terbagi dalam 1.722 kepala keluarga. Fasilitas lengkap meliputi pendidikan, kesehatan, dan ibadah menjadikan desa ini sebagai pusat kegiatan masyarakat di kecamatan.',
-            mapPath: 'PetaDesa-Karanglewaskidul/index.html'
+            mapPath: 'PetaKaranglewaskidul/index.html'
         },
         'kediri': {
             name: 'Desa Kediri',
             title: 'Informasi Desa Kediri',
             content: 'Desa Kediri terletak di sebelah utara Desa Karanglewas Kidul. Desa ini dikenal dengan potensi pertaniannya yang sangat baik, terutama di sektor padi dan palawija. Dengan sistem irigasi yang baik dan lahan persawahan yang luas, Desa Kediri menjadi salah satu penyumbang produksi pangan terbesar di kecamatan.',
-            mapPath: 'PetaDesa-Kediri/index.html'
+            mapPath: 'PetaKediri/index.html'
         },
         'pangebatan': {
             name: 'Desa Pangebatan',
             title: 'Informasi Desa Pangebatan',
             content: 'Desa Pangebatan terletak di sebelah timur Desa Karanglewas Kidul. Desa ini memiliki karakteristik masyarakat yang religius dengan beberapa pondok pesantren dan lembaga pendidikan Islam. Kehidupan keagamaan yang kuat menjadi ciri khas desa ini, dengan berbagai kegiatan keagamaan yang rutin dilaksanakan.',
-            mapPath: 'PetaDesa-Pangebatan/index.html'
+            mapPath: 'PetaPangebatan/index.html'
         },
         'tamansari': {
             name: 'Desa Tamansari',
             title: 'Informasi Desa Tamansari',
             content: 'Desa Tamansari terletak di sebelah barat Desa Karanglewas Kidul. Desa ini memiliki potensi wisata alam dan perkebunan yang menarik. Dengan pemandangan yang indah dan udara yang sejuk, Desa Tamansari menjadi tempat yang cocok untuk pengembangan wisata alam dan agrowisata.',
-            mapPath: 'PetaDesa-Tamansari/index.html'
+            mapPath: 'PetaTamansari/index.html'
         }
     };
 
