@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <title>WebGIS Karanglewas Kidul - Search & Points Active</title>
+    
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --kuning: #fbce07; --navy: #0f172a; --putih: #ffffff; --shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        html, body, #map { width: 100%; height: 100%; padding: 0; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: #000; }
+
+        /* UI HEADER & SEARCH */
+        .ui-top { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; align-items: center; gap: 12px; z-index: 3000; pointer-events: none; }
+        .search-wrapper {
+            background: var(--putih); border-radius: 50px; border: 2.5px solid var(--kuning); padding: 5px 25px;
+            display: flex; align-items: center; flex-grow: 1; max-width: 500px; pointer-events: auto; box-shadow: var(--shadow); position: relative;
+        }
+        .search-wrapper input { border: none; outline: none; width: 100%; padding: 12px 0; font-size: 15px; font-weight: 700; color: #333; }
+        
+        .btn-toggle { background: var(--navy); color: var(--kuning); border: none; width: 50px; height: 50px; border-radius: 15px; cursor: pointer; pointer-events: auto; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+        /* HASIL CARI */
+        #search-results { position: absolute; top: 70px; left: 0; right: 0; background: #fff; border-radius: 15px; max-height: 300px; overflow-y: auto; box-shadow: var(--shadow); display: none; z-index: 3001; }
+        .result-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
+        .result-item:hover { background: #fff9e6; }
+
+        /* MATA ANGIN */
+        .compass-box { position: absolute; top: 20px; right: 20px; z-index: 2500; background: #fff; width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--kuning); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow); }
+
+        /* SIDEBAR */
+        .sidebar { position: absolute; top: 85px; left: 20px; width: 300px; background: #fff; border-radius: 20px; box-shadow: var(--shadow); z-index: 2800; display: none; flex-direction: column; overflow: hidden; }
+        .sidebar.active { display: flex; }
+        .sidebar-head { padding: 15px 20px; background: var(--navy); color: var(--kuning); font-weight: 800; font-size: 13px; }
+        .sidebar-content { padding: 15px; max-height: 50vh; overflow-y: auto; }
+        
+        .layer-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+        .layer-item label { font-size: 12px; font-weight: 700; color: #444; flex-grow: 1; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="ui-top">
+        <div class="search-wrapper">
+            <i class="fas fa-search" style="color:var(--kuning); margin-right:12px;"></i>
+            <input type="text" id="search-input" placeholder="Cari RT, RW, Jalan, atau Fasilitas...">
+            <div id="search-results"></div>
+        </div>
+        <button class="btn-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')"><i class="fas fa-layer-group"></i></button>
+    </div>
+
+    <div class="compass-box">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4d/Compass_rose_browns_01.svg" width="40" alt="N">
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-head">PENGATURAN PETA</div>
+        <div class="sidebar-content" id="layer-list"></div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="js/leaflet.js"></script>
+    
+    <script src="data/BatasDesaKaranglewasKidul_52.js"></script>
+    <script src="data/BatasJalan_57.js"></script>
+    <script src="data/SungaiLN_56.js"></script>
+    <script src="data/SungaiPL_53.js"></script>
+    <script src="data/Bangunan_55.js"></script>
+    <script src="data/Alfamart_70.js"></script>
+    <script src="data/BalaiDesa_69.js"></script>
+    <script src="data/TempatIbadah_61.js"></script>
+
+    <script src="data/BatasRT1RW1_51.js"></script><script src="data/BatasRT2RW1_45.js"></script><script src="data/BatasRT3RW1_39.js"></script><script src="data/BatasRT4RW1_33.js"></script><script src="data/BatasRT5RW1_27.js"></script>
+    <script src="data/BatasRT1RW2_50.js"></script><script src="data/BatasRT2RW2_44.js"></script><script src="data/BatasRT3RW2_38.js"></script><script src="data/BatasRT4RW2_32.js"></script>
+    <script src="data/BatasRT1RW3_49.js"></script><script src="data/BatasRT2RW3_43.js"></script><script src="data/BatasRT3RW3_37.js"></script><script src="data/BatasRT4RW3_31.js"></script><script src="data/BatasRT5RW3_26.js"></script><script src="data/BatasRT6RW3_22.js"></script><script src="data/BatasRT7RW3_20.js"></script>
+    <script src="data/BatasRT1RW4_48.js"></script><script src="data/BatasRT2RW4_42.js"></script><script src="data/BatasRT3RW4_36.js"></script><script src="data/BatasRT4RW4_30.js"></script><script src="data/BatasRT5RW4_25.js"></script>
+    <script src="data/BatasRT1RW5_47.js"></script><script src="data/BatasRT2RW5_41.js"></script><script src="data/BatasRT3RW5_35.js"></script><script src="data/BatasRT4RW5_29.js"></script><script src="data/BatasRT5RW5_24.js"></script><script src="data/BatasRT6RW5_21.js"></script><script src="data/BatasRT7RW5_19.js"></script><script src="data/BatasRT8RW5_18.js"></script><script src="data/BatasRT9RW5_13.js"></script>
+    <script src="data/BatasRT1RW6_46.js"></script><script src="data/BatasRT2RW6_40.js"></script><script src="data/BatasRT3RW6_34.js"></script><script src="data/BatasRT4RW6_28.js"></script><script src="data/BatasRT5RW6_23.js"></script>
+
+    <script>
+        var map = L.map('map', { zoomControl: false }).setView([-7.419, 109.215], 16);
+        L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}').addTo(map);
+
+        var databaseCari = [];
+
+        function prosesLayer(data, label, warna, tipe, icon) {
+            if (typeof data === 'undefined') return;
+
+            var layerGeo = L.geoJson(data, {
+                style: function(f) {
+                    var s = { color: '#333', weight: 1, fillOpacity: 0.5, fillColor: warna };
+                    if (label === 'Batas Desa') { s.fillOpacity = 0.1; s.weight = 3; s.color = '#000'; }
+                    if (tipe === 'line') { s.color = warna; s.weight = 4; s.fillOpacity = 0; }
+                    return s;
+                },
+                pointToLayer: function(f, latlng) {
+                    return L.circleMarker(latlng, {
+                        radius: 8, fillColor: warna, color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.9
+                    });
+                },
+                onEachFeature: function(f, l) {
+                    var namaObjek = f.properties.Nama || f.properties.RT || f.properties.REMARK || label;
+                    l.bindPopup(`<b>${label}</b><br>${namaObjek}`);
+                    
+                    var pusat = (f.geometry.type === 'Point') ? l.getLatLng() : l.getBounds().getCenter();
+                    databaseCari.push({
+                        text: namaObjek.toString(),
+                        kat: label,
+                        layer: l,
+                        bounds: (f.geometry.type !== 'Point' ? l.getBounds() : null),
+                        latlng: pusat,
+                        icon: icon
+                    });
+                }
+            }).addTo(map);
+
+            // Tambah ke sidebar
+            var item = document.createElement('div');
+            item.className = 'layer-item';
+            item.innerHTML = `<input type="checkbox" checked id="chk_${label.replace(/\s/g,'')}"> <label for="chk_${label.replace(/\s/g,'')}">${label}</label>`;
+            item.querySelector('input').onchange = function() {
+                if(this.checked) map.addLayer(layerGeo); else map.removeLayer(layerGeo);
+            };
+            document.getElementById('layer-list').appendChild(item);
+        }
+
+        // --- LOAD DATA ---
+        prosesLayer(json_BatasDesaKaranglewasKidul_52, 'Batas Desa', '#000', 'poly', 'fa-map');
+        prosesLayer(json_Bangunan_55, 'Bangunan', '#e74c3c', 'poly', 'fa-home');
+        prosesLayer(json_SungaiPL_53, 'Sungai (Area)', '#3498db', 'poly', 'fa-water');
+        prosesLayer(json_SungaiLN_56, 'Sungai (Garis)', '#3498db', 'line', 'fa-tint');
+        prosesLayer(json_BatasJalan_57, 'Jalan', '#ffffff', 'line', 'fa-road');
+        
+        // Load Fasilitas (Point)
+        prosesLayer(json_Alfamart_70, 'Alfamart', '#f39c12', 'point', 'fa-shopping-cart');
+        prosesLayer(json_BalaiDesa_69, 'Balai Desa', '#2980b9', 'point', 'fa-university');
+        prosesLayer(json_TempatIbadah_61, 'Masjid', '#27ae60', 'point', 'fa-mosque');
+
+        // Load Seluruh RT 1-35
+        var listRT = [
+            {d: json_BatasRT1RW1_51, n: 'RT 01 RW 01'}, {d: json_BatasRT2RW1_45, n: 'RT 02 RW 01'}, {d: json_BatasRT3RW1_39, n: 'RT 03 RW 01'}, {d: json_BatasRT4RW1_33, n: 'RT 04 RW 01'}, {d: json_BatasRT5RW1_27, n: 'RT 05 RW 01'},
+            {d: json_BatasRT1RW2_50, n: 'RT 01 RW 02'}, {d: json_BatasRT2RW2_44, n: 'RT 02 RW 02'}, {d: json_BatasRT3RW2_38, n: 'RT 03 RW 02'}, {d: json_BatasRT4RW2_32, n: 'RT 04 RW 02'},
+            {d: json_BatasRT1RW3_49, n: 'RT 01 RW 03'}, {d: json_BatasRT2RW3_43, n: 'RT 02 RW 03'}, {d: json_BatasRT3RW3_37, n: 'RT 03 RW 03'}, {d: json_BatasRT4RW3_31, n: 'RT 04 RW 03'}, {d: json_BatasRT5RW3_26, n: 'RT 05 RW 03'}, {d: json_BatasRT6RW3_22, n: 'RT 06 RW 03'}, {d: json_BatasRT7RW3_20, n: 'RT 07 RW 03'},
+            {d: json_BatasRT1RW4_48, n: 'RT 01 RW 04'}, {d: json_BatasRT2RW4_42, n: 'RT 02 RW 04'}, {d: json_BatasRT3RW4_36, n: 'RT 03 RW 04'}, {d: json_BatasRT4RW4_30, n: 'RT 04 RW 04'}, {d: json_BatasRT5RW4_25, n: 'RT 05 RW 04'},
+            {d: json_BatasRT1RW5_47, n: 'RT 01 RW 05'}, {d: json_BatasRT2RW5_41, n: 'RT 02 RW 05'}, {d: json_BatasRT3RW5_35, n: 'RT 03 RW 05'}, {d: json_BatasRT4RW5_29, n: 'RT 04 RW 05'}, {d: json_BatasRT5RW5_24, n: 'RT 05 RW 05'}, {d: json_BatasRT6RW5_21, n: 'RT 06 RW 05'}, {d: json_BatasRT7RW5_19, n: 'RT 07 RW 05'}, {d: json_BatasRT8RW5_18, n: 'RT 08 RW 05'}, {d: json_BatasRT9RW5_13, n: 'RT 09 RW 05'},
+            {d: json_BatasRT1RW6_46, n: 'RT 01 RW 06'}, {d: json_BatasRT2RW6_40, n: 'RT 02 RW 06'}, {d: json_BatasRT3RW6_34, n: 'RT 03 RW 06'}, {d: json_BatasRT4RW6_28, n: 'RT 04 RW 06'}, {d: json_BatasRT5RW6_23, n: 'RT 05 RW 06'}
+        ];
+        listRT.forEach(r => prosesLayer(r.d, r.n, '#fbce07', 'poly', 'fa-vector-square'));
+
+        // --- SEARCH ENGINE LOGIC ---
+        var inp = document.getElementById('search-input'), box = document.getElementById('search-results');
+        inp.addEventListener('input', function() {
+            var v = this.value.toLowerCase(); box.innerHTML = '';
+            if(v.length < 1) { box.style.display = 'none'; return; }
+            
+            var match = databaseCari.filter(i => i.text.toLowerCase().includes(v) || i.kat.toLowerCase().includes(v)).slice(0, 10);
+            if(match.length > 0) {
+                box.style.display = 'block';
+                match.forEach(m => {
+                    var d = document.createElement('div'); d.className = 'result-item';
+                    d.innerHTML = `<i class="fas ${m.icon}" style="color:var(--kuning)"></i> <div><b>${m.text}</b><br><small>${m.kat}</small></div>`;
+                    d.onclick = function() {
+                        if(m.bounds) map.fitBounds(m.bounds, {padding:[50,50]}); else map.flyTo(m.latlng, 19);
+                        m.layer.openPopup(); box.style.display = 'none';
+                    };
+                    box.appendChild(d);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

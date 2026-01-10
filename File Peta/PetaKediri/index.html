@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <title>WebGIS Desa Kediri</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --primary: #2563eb; 
+            --primary-dark: #1e40af;
+            --dark: #0f172a; 
+            --shadow: 0 10px 30px rgba(0,0,0,0.3); 
+        }
+        
+        html, body, #map { 
+            width: 100%; 
+            height: 100%; 
+            padding: 0; 
+            margin: 0; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            overflow: hidden; 
+            background: #f8fafc !important; 
+        }
+
+        .ui-header {
+            position: absolute; top: 20px; left: 20px; right: 20px;
+            display: flex; align-items: center; gap: 12px; z-index: 3000; pointer-events: none;
+        }
+        .search-container {
+            background: #ffffff; border-radius: 12px; box-shadow: var(--shadow);
+            display: flex; align-items: center; padding: 0 18px;
+            flex-grow: 1; max-width: 450px; pointer-events: auto; position: relative;
+            border: 2px solid var(--primary);
+        }
+        .search-container input { 
+            border: none; outline: none; width: 100%; padding: 14px 0; 
+            font-size: 14px; font-weight: 600; color: #1e293b; background: transparent;
+        }
+        
+        .results-box {
+            position: absolute; top: 60px; left: 0; right: 0; background: #ffffff;
+            border-radius: 12px; max-height: 250px; overflow-y: auto; box-shadow: var(--shadow);
+            display: none; border: 1px solid #e2e8f0; z-index: 3001;
+        }
+        .res-item { 
+            padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; 
+            font-size: 13px; font-weight: 600; border-bottom: 1px solid #f1f5f9; color: #334155;
+        }
+        .res-item:hover { background: #eff6ff; color: var(--primary); }
+
+        .btn-menu {
+            background: var(--primary); color: #ffffff; border: none; width: 50px; height: 50px;
+            border-radius: 12px; box-shadow: var(--shadow); cursor: pointer; pointer-events: auto; font-size: 18px;
+            transition: all 0.2s;
+        }
+        .btn-menu:hover { background: var(--primary-dark); }
+
+        .sidebar {
+            position: absolute; top: 85px; left: 20px; width: 300px;
+            background: #ffffff; border-radius: 16px; box-shadow: var(--shadow);
+            z-index: 2500; display: none; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0;
+        }
+        .sidebar.active { display: flex; }
+        .sidebar-header { padding: 16px; background: var(--primary); color: #ffffff; font-weight: 800; font-size: 14px; }
+        .sidebar-body { padding: 12px; max-height: 50vh; overflow-y: auto; }
+
+        .layer-item {
+            display: flex; align-items: center; padding: 10px; margin-bottom: 6px;
+            border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; cursor: pointer;
+            transition: 0.2s;
+        }
+        .layer-item:hover { background: #f1f5f9; border-color: var(--primary); }
+        .layer-item label { flex: 1; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; cursor: pointer; color: #475569; }
+
+        .map-icon { text-align: center; }
+        .map-icon i { 
+            font-size: 22px; 
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+            -webkit-text-stroke: 1px #fff;
+        }
+
+        .balai-desa-label {
+            background: var(--primary);
+            border: 2px solid #fff;
+            border-radius: 6px;
+            color: #fff;
+            font-weight: 800;
+            padding: 3px 8px;
+            font-size: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .compass {
+            position: absolute; top: 20px; right: 20px; z-index: 2000;
+            background: white; width: 55px; height: 55px; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            box-shadow: var(--shadow); border: 2px solid var(--primary);
+        }
+
+        .custom-controls {
+            position: absolute; bottom: 30px; left: 20px; z-index: 2000;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .control-btn {
+            width: 45px; height: 45px; background: white; border: none; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+            color: var(--primary); cursor: pointer; box-shadow: var(--shadow); font-weight: bold;
+            transition: 0.2s;
+        }
+        .control-btn:hover { background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="ui-header">
+        <div class="search-container">
+            <i class="fas fa-search" style="color:var(--primary); margin-right:12px"></i>
+            <input type="text" id="main-search" placeholder="Cari lokasi di Desa Kediri..." autocomplete="off">
+            <div id="search-results" class="results-box"></div>
+        </div>
+        <button class="btn-menu" onclick="toggleSidebar()"><i class="fas fa-layer-group"></i></button>
+    </div>
+
+    <div class="compass">
+        <span style="color:#ef4444; font-size:10px; font-weight:900;">U</span>
+        <i class="fas fa-location-arrow" id="compass-needle" style="transform: rotate(-45deg); color: var(--primary);"></i>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">LAPISAN PETA DESA</div>
+        <div class="sidebar-body">
+            <p style="font-size: 10px; font-weight: 800; color: var(--primary); margin: 5px; text-transform: uppercase;">Dasar Peta</p>
+            <div class="layer-item" onclick="changeBase('hybrid')">
+                <input type="radio" name="bmap" id="rad-hyb" checked> <label for="rad-hyb"><i class="fas fa-globe"></i> Google Hybrid</label>
+            </div>
+            <div class="layer-item" onclick="changeBase('road')">
+                <input type="radio" name="bmap" id="rad-road"> <label for="rad-road"><i class="fas fa-map"></i> Google Maps</label>
+            </div>
+            <div class="layer-item" onclick="changeBase('sat')">
+                <input type="radio" name="bmap" id="rad-sat"> <label for="rad-sat"><i class="fas fa-satellite"></i> Satelit Polos</label>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
+            <p style="font-size: 10px; font-weight: 800; color: var(--primary); margin: 5px; text-transform: uppercase;">Data Spasial</p>
+            <div id="layer-container"></div>
+        </div>
+    </div>
+
+    <div class="custom-controls">
+        <button class="control-btn" onclick="map.zoomIn()" title="Perbesar"><i class="fas fa-plus"></i></button>
+        <button class="control-btn" onclick="map.zoomOut()" title="Perkecil"><i class="fas fa-minus"></i></button>
+        <button class="control-btn" onclick="goHome()" title="Kembali ke Tengah"><i class="fas fa-home"></i></button>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+    
+    <!-- Data Desa Kediri -->
+    <script src="data/DusunKediri_3.js"></script>
+    <script src="data/Sungai_4.js"></script>
+    <script src="data/Rel_5.js"></script>
+    <script src="data/Jalan_6.js"></script>
+    <script src="data/TempatIbadah_7.js"></script>
+    <script src="data/Kesehatan_8.js"></script>
+    <script src="data/Makam_9.js"></script>
+    <script src="data/Pendidikan_10.js"></script>
+    <script src="data/Pemerintahan_11.js"></script>
+
+    <script>
+        const homePos = [-7.447983921156136, 109.21368904551755];
+        const homeZoom = 14;
+
+        var map = L.map('map', { 
+            zoomControl: false, 
+            maxZoom: 28 
+        }).setView(homePos, homeZoom);
+        
+        var gHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            maxZoom: 28, maxNativeZoom: 22, zIndex: 1
+        }).addTo(map);
+
+        var gRoad = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            maxZoom: 28, maxNativeZoom: 22, zIndex: 1
+        });
+        
+        var gSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 28, maxNativeZoom: 22, zIndex: 1
+        });
+
+        function changeBase(mode) {
+            map.removeLayer(gHybrid);
+            map.removeLayer(gRoad);
+            map.removeLayer(gSat);
+            
+            if(mode==='hybrid') map.addLayer(gHybrid);
+            else if(mode==='road') map.addLayer(gRoad);
+            else map.addLayer(gSat);
+        }
+
+        function goHome() {
+            map.flyTo(homePos, homeZoom);
+        }
+
+        var searchDatabase = [];
+        var layers = {}; 
+        var highlightedLayer = null;
+
+        function addLayerFinal(data, name, icon, color, isPoint, isImportant) {
+            if (typeof data === 'undefined') return;
+
+            var lyr = L.geoJson(data, {
+                style: function(f) {
+                    var zoom = map.getZoom();
+                    
+                    // Batas Dusun - dengan transparansi dinamis dan highlight
+                    if (name === 'Batas Dusun') {
+                        var fillOp = zoom >= 16 ? 0.25 : 0.45;
+                        var borderOp = 1.0;
+                        return { 
+                            color: '#d97706',
+                            weight: 2.5, 
+                            fillOpacity: fillOp, 
+                            fillColor: '#fef3c7', 
+                            opacity: borderOp 
+                        };
+                    }
+                    
+                    // Sungai - biru aqua solid
+                    if (name === 'Sungai') {
+                        return { 
+                            color: '#0891b2',
+                            weight: 1.5, 
+                            fillOpacity: 0.65,
+                            fillColor: '#a5f3fc',
+                            opacity: 1
+                        };
+                    }
+                    
+                    // Jalan - abu-abu stone
+                    if (name === 'Jalan') {
+                        return { 
+                            color: '#78716c', 
+                            weight: 1.8, 
+                            opacity: 1,
+                            fillOpacity: 0
+                        };
+                    }
+                    
+                    // Rel Kereta - hitam dengan dash
+                    if (name === 'Rel Kereta') {
+                        return { 
+                            color: '#000000', 
+                            weight: 1.5, 
+                            opacity: 0.9, 
+                            dashArray: '4, 4' 
+                        };
+                    }
+
+                    return { 
+                        color: color, 
+                        weight: 2, 
+                        fillOpacity: 0.6, 
+                        fillColor: color,
+                        opacity: 1
+                    };
+                },
+                pointToLayer: function(f, latlng) {
+                    if(!isPoint) return;
+                    
+                    var label = f.properties.Nama || f.properties.Name || 
+                               f.properties['Nama Dusun'] || name;
+                    
+                    searchDatabase.push({ name: label, latlng: latlng, icon: icon });
+                    
+                    var marker = L.marker(latlng, {
+                        icon: L.divIcon({
+                            className: 'map-icon', 
+                            html: `<i class="fas ${icon}" style="color:${color}"></i>`,
+                            iconSize: [30, 30], 
+                            iconAnchor: [15, 15]
+                        })
+                    });
+                    
+                    if(isImportant) {
+                        marker.bindTooltip(label, { 
+                            permanent: true, 
+                            direction: 'bottom', 
+                            className: 'balai-desa-label', 
+                            offset: [0, 10] 
+                        });
+                    }
+                    
+                    return marker;
+                },
+                onEachFeature: function(f, l) {
+                    var popName = f.properties.Nama || 
+                                 f.properties['Nama Dusun'] ||
+                                 f.properties.Name || 
+                                 f.properties.Dusun || 
+                                 name;
+                    
+                    var popContent = `<div style="font-family:'Plus Jakarta Sans'; min-width: 150px;">
+                                        <b style="color: var(--primary); font-size: 14px;">${name}</b><br>
+                                        <span style="font-size: 12px;">${popName}</span></div>`;
+                    
+                    l.bindPopup(popContent);
+                    
+                    // Highlight untuk Batas Dusun
+                    if(name === 'Batas Dusun') {
+                        l.on('click', function(e) {
+                            if(highlightedLayer) {
+                                layers['Batas Dusun'].lyr.resetStyle(highlightedLayer);
+                            }
+                            
+                            highlightedLayer = e.target;
+                            highlightedLayer.setStyle({
+                                fillColor: '#fbbf24',
+                                fillOpacity: 0.75,
+                                color: '#ea580c',
+                                weight: 4,
+                                opacity: 1
+                            });
+                            
+                            highlightedLayer.openPopup();
+                        });
+                        
+                        l.on('popupclose', function() {
+                            if(highlightedLayer) {
+                                layers['Batas Dusun'].lyr.resetStyle(highlightedLayer);
+                                highlightedLayer = null;
+                            }
+                        });
+                    }
+                }
+            });
+
+            // Hanya layer non-point dan balai desa yang langsung ditambahkan
+            if(isImportant || !isPoint) {
+                lyr.addTo(map);
+            }
+            
+            layers[name] = { 
+                lyr: lyr, 
+                isImportant: isImportant, 
+                isPoint: isPoint, 
+                color: color,
+                visible: true // Semua layer visible (checkbox checked)
+            };
+
+            // Semua layer visible true (checkbox checked)
+            layers[name].visible = true;
+            
+            var row = document.createElement('div');
+            row.className = 'layer-item';
+            var safeName = name.replace(/\s/g, '');
+            // Semua checkbox dalam keadaan checked
+            row.innerHTML = `<input type="checkbox" checked id="chk-${safeName}">
+                             <label for="chk-${safeName}"><i class="fas ${icon}" style="color:${color}"></i> ${name}</label>`;
+            
+            row.querySelector('input').onchange = function() {
+                layers[name].visible = this.checked;
+                updateVisibility(); 
+            };
+            
+            document.getElementById('layer-container').appendChild(row);
+        }
+
+        // Tambahkan layer dengan warna yang lebih solid
+        addLayerFinal(json_DusunKediri_3, 'Batas Dusun', 'fa-draw-polygon', '#fef3c7', false, false);
+        addLayerFinal(json_Sungai_4, 'Sungai', 'fa-water', '#a5f3fc', false, false); 
+        addLayerFinal(json_Jalan_6, 'Jalan', 'fa-road', '#78716c', false, false); 
+        addLayerFinal(json_Rel_5, 'Rel Kereta', 'fa-train', '#000000', false, false); 
+        addLayerFinal(json_TempatIbadah_7, 'Tempat Ibadah', 'fa-mosque', '#15803d', true, false); 
+        addLayerFinal(json_Makam_9, 'Makam', 'fa-monument', '#64748b', true, false); 
+        addLayerFinal(json_Pemerintahan_11, 'Balai Desa', 'fa-university', '#2563eb', true, true); 
+        addLayerFinal(json_Pendidikan_10, 'Sekolah', 'fa-graduation-cap', '#7e22ce', true, false); 
+        addLayerFinal(json_Kesehatan_8, 'Kesehatan', 'fa-plus-circle', '#e11d48', true, false); 
+
+        function updateVisibility() {
+            var zoom = map.getZoom();
+            
+            for (var key in layers) {
+                var layerObj = layers[key];
+                
+                if (!layerObj.visible) {
+                    map.removeLayer(layerObj.lyr);
+                    continue;
+                }
+                
+                // Batas Dusun, Sungai, Jalan, Rel selalu tampil
+                if (key === 'Batas Dusun' || key === 'Jalan' || key === 'Sungai' || key === 'Rel Kereta') {
+                    map.addLayer(layerObj.lyr);
+                    
+                    // Update style Batas Dusun berdasarkan zoom
+                    if (key === 'Batas Dusun') {
+                        layerObj.lyr.setStyle(function(feature) {
+                            if(highlightedLayer && highlightedLayer.feature === feature) {
+                                return;
+                            }
+                            
+                            var fillOp = zoom >= 16 ? 0.25 : 0.45;
+                            var borderOp = 1.0;
+                            return {
+                                color: '#d97706',
+                                weight: 2.5, 
+                                fillOpacity: fillOp, 
+                                fillColor: '#fef3c7', 
+                                opacity: borderOp
+                            };
+                        });
+                    }
+                } 
+                // Balai Desa selalu tampil dengan label
+                else if (layerObj.isImportant) {
+                    map.addLayer(layerObj.lyr);
+                } 
+                // Point lainnya hanya tampil saat zoom >= 16
+                else if (layerObj.isPoint) {
+                    if (zoom >= 16) { 
+                        map.addLayer(layerObj.lyr); 
+                    } else { 
+                        map.removeLayer(layerObj.lyr); 
+                    }
+                }
+            }
+        }
+
+        map.on('zoomend', updateVisibility);
+        
+        // Tambahkan layer dasar yang harus selalu tampil
+        if(typeof json_DusunKediri_3 !== 'undefined') {
+            map.addLayer(layers['Batas Dusun'].lyr);
+        }
+        if(typeof json_Sungai_4 !== 'undefined') {
+            map.addLayer(layers['Sungai'].lyr);
+        }
+        if(typeof json_Jalan_6 !== 'undefined') {
+            map.addLayer(layers['Jalan'].lyr);
+        }
+        if(typeof json_Rel_5 !== 'undefined') {
+            map.addLayer(layers['Rel Kereta'].lyr);
+        }
+        
+        updateVisibility(); 
+
+        // Search functionality
+        var sInp = document.getElementById('main-search'), 
+            sRes = document.getElementById('search-results');
+        
+        sInp.addEventListener('input', function() {
+            var val = this.value.toLowerCase(); 
+            sRes.innerHTML = '';
+            
+            if(val.length < 1) { 
+                sRes.style.display = 'none'; 
+                return; 
+            }
+            
+            var matches = searchDatabase.filter(i => i.name.toLowerCase().includes(val)).slice(0, 8);
+            
+            if(matches.length > 0) {
+                sRes.style.display = 'block';
+                matches.forEach(m => {
+                    var d = document.createElement('div'); 
+                    d.className = 'res-item';
+                    d.innerHTML = `<i class="fas ${m.icon}" style="color:var(--primary)"></i> ${m.name}`;
+                    d.onclick = function() {
+                        map.flyTo(m.latlng, 19);
+                        L.popup()
+                            .setLatLng(m.latlng)
+                            .setContent(`<b style="color: var(--primary);">${m.name}</b>`)
+                            .openOn(map);
+                        sRes.style.display = 'none'; 
+                        sInp.value = m.name;
+                    };
+                    sRes.appendChild(d);
+                });
+            } else {
+                sRes.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-container')) {
+                sRes.style.display = 'none';
+            }
+        });
+
+        function toggleSidebar() { 
+            document.getElementById('sidebar').classList.toggle('active'); 
+        }
+        
+        L.control.locate({ 
+            position: 'bottomright', 
+            drawCircle: false,
+            locateOptions: {maxZoom: 19}
+        }).addTo(map);
+    </script>
+</body>
+</html>

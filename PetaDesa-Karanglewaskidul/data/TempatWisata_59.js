@@ -1,0 +1,1 @@
+var json_TempatWisata_59 = {"type":"FeatureCollection","name":"TempatWisata_59","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[{"type":"Feature","properties":{"id":"1","Nama":"Tempat Wisata Kedung Aruk & Jayub"},"geometry":{"type":"Point","coordinates":[109.196645999610325,-7.428714087642012]}}]}

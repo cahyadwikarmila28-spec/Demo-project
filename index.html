@@ -8,77 +8,8 @@
     <link rel="stylesheet" href="style.css"> 
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <style>
-        :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --text-light: #f4f4f4;
-            --yellow-accent: #ffd700;
-        }
-        /* Style untuk About Section agar foto berada di tengah */
-        .profile-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 3rem;
-            border-radius: 15px;
-            text-align: center;
-            margin: 0 auto 2rem;
-            max-width: 600px; 
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .profile-photo-container {
-            width: 180px; 
-            height: 180px;
-            margin: 0 auto 2rem;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 5px solid var(--yellow-accent); 
-            background-color: #333; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .profile-photo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; 
-        }
-        .profile-card h3 {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-        }
-        .profile-card p.title {
-            font-size: 1.2rem;
-            color: var(--yellow-accent); 
-            margin-bottom: 2rem;
-            font-weight: 500;
-        }
-        .biodata-list {
-            list-style: none;
-            text-align: left;
-            padding: 0;
-            max-width: 450px;
-            margin: 0 auto 2rem;
-        }
-        .biodata-list li {
-            padding: 0.8rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            font-size: 1.1rem;
-        }
-        .biodata-list strong {
-            color: var(--text-light);
-            font-weight: 600;
-        }
-        .biodata-list span {
-            color: #aaa;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="bg-animation">
@@ -94,21 +25,41 @@
     <nav>
         <div class="nav-container">
             <div class="logo">
-                <i class="fas fa-map-marked-alt"></i>
+                <img src="Lambang_Kabupaten_Banyumas.png" class="logo-img" alt="Logo Karanglewas">
                 <span>Karanglewas</span>
             </div>
-            <ul class="nav-links">
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
                 <li><a href="#beranda" class="nav-link" onclick="showSection('beranda', event)">
-                    <i class="fas fa-home"></i> Beranda
+                    <i class="fas fa-home"></i> <span>Beranda</span>
                 </a></li>
-                <li><a href="#peta-desa" class="nav-link" onclick="showSection('peta-desa', event)">
-                    <i class="fas fa-map"></i> Peta Desa
-                </a></li>
+                <li class="nav-dropdown">
+                    <a href="#peta-desa" class="nav-link" onclick="showSection('peta-desa', event)">
+                        <i class="fas fa-map"></i> <span>Peta Desa</span>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" onclick="showVillageMapDirect('karanglewas-kidul', event)">
+                            <i class="fas fa-map-marker-alt"></i> Karanglewas Kidul
+                        </a></li>
+                        <li><a href="#" onclick="showVillageMapDirect('kediri', event)">
+                            <i class="fas fa-map-marker-alt"></i> Kediri
+                        </a></li>
+                        <li><a href="#" onclick="showVillageMapDirect('pangebatan', event)">
+                            <i class="fas fa-map-marker-alt"></i> Pangebatan
+                        </a></li>
+                        <li><a href="#" onclick="showVillageMapDirect('tamansari', event)">
+                            <i class="fas fa-map-marker-alt"></i> Tamansari
+                        </a></li>
+                    </ul>
+                </li>
                 <li><a href="#peta-kecamatan" class="nav-link" onclick="showSection('peta-kecamatan', event)">
-                    <i class="fas fa-map-marked"></i> Peta Kecamatan
+                    <i class="fas fa-map-marked"></i> <span>Peta Kecamatan</span>
                 </a></li>
                 <li><a href="#tentang" class="nav-link" onclick="showSection('tentang', event)">
-                    <i class="fas fa-info-circle"></i> Tentang
+                    <i class="fas fa-info-circle"></i> <span>Tentang</span>
                 </a></li>
             </ul>
         </div>
@@ -116,12 +67,12 @@
 
     <div class="hero">
         <div class="hero-content">
-            <div class="hero-logo" style="box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.1);">
-                <i class="fas fa-globe-asia" style="font-size: 5rem; color: var(--yellow-accent);"></i>
+            <div class="hero-logo">
+                <img src="Lambang_Kabupaten_Banyumas.png" alt="Logo Kabupaten Banyumas">
             </div>
-            <h1>Karanglewas</h1>
-            <p class="hero-tagline">Satu Peta, Satu Data, Satu Kebijakan</p>
-            <p class="hero-subtitle">Portal Informasi Geografis Terpadu untuk Pembangunan Berkelanjutan</p>
+            <h1 class="animate-title">Kecamatan Karanglewas</h1>
+            <p class="hero-tagline animate-fade-in">Portal Informasi Geografis Terpadu</p>
+            <p class="hero-subtitle animate-fade-in-delay">Desa Karanglewas Kidul, Kecamatan Karanglewas, Banyumas</p>
         </div>
     </div>
 
@@ -153,60 +104,146 @@
     <div class="container">
         
         <section id="beranda" class="content-section">
-            <h2 class="section-title"><i class="fas fa-home"></i> Selamat Datang</h2>
-            <p class="welcome-text">
-                Selamat datang di Portal Informasi Geografis Karanglewas Kidul. Platform digital ini dirancang untuk menyediakan akses mudah dan cepat terhadap informasi geografis, data pembangunan, serta kebijakan desa yang transparan dan akuntabel. Kami berkomitmen untuk memanfaatkan teknologi informasi dalam mendukung perencanaan pembangunan yang tepat sasaran dan berkelanjutan.
-            </p>
+            <h2 class="section-title"><i class="fas fa-home"></i> Informasi Desa Karanglewas Kidul</h2>
+            
+            <div class="info-detail-card" style="margin-bottom: 2rem;">
+                <h4><i class="fas fa-map-marker-alt"></i> Profil Desa</h4>
+                <p>
+                    Desa Karanglewas Kidul merupakan salah satu desa di Kecamatan Karanglewas, Kabupaten Banyumas, Provinsi Jawa Tengah. 
+                    Desa ini memiliki posisi strategis dengan akses yang baik ke berbagai fasilitas umum dan pusat kegiatan ekonomi. 
+                    Dengan luas wilayah 13,4 km², desa ini dihuni oleh 5.206 jiwa yang terbagi dalam 1.722 kepala keluarga.
+                </p>
+            </div>
 
-            <div class="cards-grid">
+            <div class="info-card-grid">
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-compass"></i> Batas Wilayah</h4>
+                    <p>
+                        <strong>Utara:</strong> Desa Kediri<br>
+                        <strong>Selatan:</strong> Kecamatan Karangmoncol<br>
+                        <strong>Timur:</strong> Desa Pangebatan<br>
+                        <strong>Barat:</strong> Desa Tamansari
+                    </p>
+                </div>
+
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-building"></i> Potensi Desa</h4>
+                    <p>
+                        Desa Karanglewas Kidul memiliki potensi pertanian, peternakan, dan UMKM yang berkembang. 
+                        Mayoritas masyarakat bermata pencaharian sebagai petani dan pedagang. Desa ini juga memiliki 
+                        berbagai fasilitas pendidikan dan kesehatan yang memadai.
+                    </p>
+                </div>
+
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-users"></i> Demografi</h4>
+                    <p>
+                        <strong>Jumlah Penduduk:</strong> 5.206 jiwa<br>
+                        <strong>Kepala Keluarga:</strong> 1.722 KK<br>
+                        <strong>RW:</strong> 6 RW<br>
+                        <strong>RT:</strong> 35 RT<br>
+                        <strong>Kepadatan:</strong> Sedang
+                    </p>
+                </div>
+            </div>
+
+            <h3 style="color: var(--primary-color); font-size: 2rem; margin: 3rem 0 1.5rem; text-align: center;">
+                <i class="fas fa-city"></i> Kecamatan Karanglewas
+            </h3>
+
+            <div class="info-detail-card" style="margin-bottom: 2rem;">
+                <h4><i class="fas fa-info-circle"></i> Tentang Kecamatan</h4>
+                <p>
+                    Kecamatan Karanglewas adalah salah satu kecamatan di Kabupaten Banyumas yang terdiri dari 4 desa utama: 
+                    Karanglewas Kidul, Kediri, Pangebatan, dan Tamansari. Kecamatan ini memiliki potensi pertanian yang besar 
+                    dan menjadi salah satu sentra produksi pangan di Kabupaten Banyumas. Dengan topografi yang relatif datar, 
+                    wilayah ini sangat cocok untuk pengembangan pertanian dan perkebunan.
+                </p>
+            </div>
+
+            <div class="info-card-grid">
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-map"></i> Desa Karanglewas Kidul</h4>
+                    <p>
+                        Desa terbesar di kecamatan dengan fasilitas lengkap termasuk pendidikan, kesehatan, dan ibadah. 
+                        Memiliki lapangan olahraga dan pusat kegiatan masyarakat yang aktif.
+                    </p>
+                </div>
+
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-map"></i> Desa Kediri</h4>
+                    <p>
+                        Desa dengan potensi pertanian yang kuat, terletak di sebelah utara Karanglewas Kidul. 
+                        Memiliki area persawahan yang luas dan sistem irigasi yang baik.
+                    </p>
+                </div>
+
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-map"></i> Desa Pangebatan</h4>
+                    <p>
+                        Desa di sebelah timur dengan karakteristik masyarakat yang religius. Memiliki beberapa 
+                        pondok pesantren dan lembaga pendidikan Islam.
+                    </p>
+                </div>
+
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-map"></i> Desa Tamansari</h4>
+                    <p>
+                        Desa di sebelah barat dengan potensi wisata alam dan perkebunan. Memiliki pemandangan 
+                        yang indah dan udara yang sejuk.
+                    </p>
+                </div>
+            </div>
+
+            <div class="cards-grid" style="margin-top: 3rem;">
                 <div class="card" onclick="showSection('peta-desa', event)">
                     <i class="fas fa-map"></i>
                     <h3>Peta Desa</h3>
-                    <p>Jelajahi peta interaktif lengkap Desa Karanglewas Kidul dengan informasi detail wilayah dan fasilitas umum</p>
+                    <p>Jelajahi peta interaktif lengkap Desa Karanglewas Kidul dengan informasi detail wilayah</p>
                 </div>
                 <div class="card" onclick="showSection('peta-kecamatan', event)">
                     <i class="fas fa-globe-asia"></i>
                     <h3>Peta Kecamatan</h3>
-                    <p>Lihat peta komprehensif Kecamatan Karanglewas dan hubungan antar wilayah dalam satu visualisasi</p>
+                    <p>Lihat peta komprehensif Kecamatan Karanglewas dan pilih desa yang ingin Anda lihat</p>
                 </div>
                 <div class="card" onclick="showSection('tentang', event)">
                     <i class="fas fa-info-circle"></i>
-                    <h3>Tentang Saya</h3>
-                    <p>Kenali lebih dekat visi, misi, dan layanan yang kami sediakan untuk masyarakat Karanglewas</p>
+                    <h3>Tentang</h3>
+                    <p>Informasi lengkap tentang Desa dan Kecamatan Karanglewas</p>
                 </div>
             </div>
 
             <div style="margin-top: 4rem;">
-                <h3 style="color: #667eea; font-size: 2rem; margin-bottom: 2rem; text-align: center;">
+                <h3 style="color: var(--primary-color); font-size: 2rem; margin-bottom: 2rem; text-align: center;">
                     <i class="fas fa-building"></i> Fasilitas Umum Desa
                 </h3>
                 <div class="cards-grid">
-                    <div class="card" style="background: linear-gradient(135deg, rgba(17, 153, 142, 0.9) 0%, rgba(56, 239, 125, 0.9) 100%);">
+                    <div class="card" style="background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);">
                         <i class="fas fa-school"></i>
                         <h3>Pendidikan</h3>
                         <p>TK, SD/MI, SMP, dan Pondok Pesantren dengan fasilitas memadai untuk pendidikan berkualitas</p>
                     </div>
-                    <div class="card" style="background: linear-gradient(135deg, rgba(240, 147, 251, 0.9) 0%, rgba(245, 87, 108, 0.9) 100%);">
+                    <div class="card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                         <i class="fas fa-hospital"></i>
                         <h3>Kesehatan</h3>
-                        <p>BKD (Badan Kesehatan Desa),  Posyandu aktif, dan layanan kesehatan masyarakat</p>
+                        <p>BKD (Badan Kesehatan Desa), Posyandu aktif, dan layanan kesehatan masyarakat</p>
                     </div>
-                    <div class="card" style="background: linear-gradient(135deg, rgba(250, 112, 154, 0.9) 0%, rgba(254, 225, 64, 0.9) 100%);">
+                    <div class="card" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">
                         <i class="fas fa-mosque"></i>
                         <h3>Ibadah</h3>
                         <p>5 Masjid dan 8 Musholla tersebar di seluruh wilayah desa</p>
                     </div>
-                    <div class="card" style="background: linear-gradient(135deg, rgba(48, 207, 208, 0.9) 0%, rgba(51, 8, 103, 0.9) 100%);">
+                    <div class="card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
                         <i class="fas fa-store"></i>
                         <h3>Ekonomi</h3>
-                        <p>Alfanart dan UMKM yang berkembang pesat</p>
+                        <p>Alfamart dan UMKM yang berkembang pesat</p>
                     </div>
-                    <div class="card" style="background: linear-gradient(135deg, rgba(250, 174, 50, 0.9) 0%, rgba(250, 82, 82, 0.9) 100%);">
+                    <div class="card" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
                         <i class="fas fa-futbol"></i>
                         <h3>Olahraga</h3>
-                        <p>Lapangan sepak Ekapala, Lapangan Badminton RT 3 RW 6, Lapangan Badminton Karanglewas Kidul</p>
+                        <p>Lapangan sepak Ekapala, Lapangan Badminton RT 3 RW 6, dan fasilitas olahraga lainnya</p>
                     </div>
-                    <div class="card" style="background: linear-gradient(135deg, rgba(168, 237, 234, 0.9) 0%, rgba(254, 214, 227, 0.9) 100%);">
+                    <div class="card" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
                         <i class="fas fa-landmark"></i>
                         <h3>Pemerintahan</h3>
                         <p>Kantor Desa, Balai Desa, dan kantor pelayanan publik lainnya</p>
@@ -215,44 +252,145 @@
             </div>
 
             <div class="info-box">
-                <h4><i class="fas fa-bullhorn"></i> Informasi Penting</h4>
-                <p>Portal ini merupakan bagian dari komitmen Pemerintah Desa Karanglewas Kidul dalam mewujudkan tata kelola pemerintahan yang baik (good governance) melalui pemanfaatan teknologi informasi. Dengan konsep **"Satu Peta, Satu Data, Satu Kebijakan"**, kami mengintegrasikan seluruh informasi geografis dan data pembangunan untuk menghasilkan kebijakan yang lebih efektif dan tepat sasaran bagi kesejahteraan masyarakat.</p>
+                <h4><i class="fas fa-bullhorn"></i> Visi Desa</h4>
+                <p>"Terwujudnya Desa Karanglewas Kidul yang Maju, Sejahtera, dan Religius melalui Pembangunan yang Berkelanjutan dan Berbasis Teknologi Informasi"</p>
             </div>
         </section>
 
-        <section id="peta-desa" class="content-section">
-            <h2 class="section-title"><i class="fas fa-map"></i> Peta Desa Karanglewas Kidul</h2>
-            <div class="map-container" style="height: 85vh; padding: 0; background: var(--background-dark);">
-                <iframe src="Peta_Desa/Desa.html" style="width: 100%; height: 100%; border: none; border-radius: 10px; background: white;" title="Peta Desa"></iframe>
+        <section id="peta-desa" class="content-section" style="padding: 0; background: transparent; box-shadow: none;">
+            <div class="map-container" style="height: 100vh; padding: 0; background: white; border-radius: 0;">
+                <iframe id="desa-map" src="PetaDesa/index.html" style="width: 100%; height: 100%; border: none; border-radius: 0;" title="Peta Desa"></iframe>
             </div>
         </section>
 
-        <section id="peta-kecamatan" class="content-section">
-            <h2 class="section-title"><i class="fas fa-map-marked"></i> Peta Kecamatan Karanglewas</h2>
-            <div class="map-container" style="height: 85vh; padding: 0; background: var(--background-dark);">
-                <iframe src="Peta_Kecamatan/Kecamatan.html" style="width: 100%; height: 100%; border: none; border-radius: 10px; background: white;" title="Peta Kecamatan"></iframe>
+        <section id="peta-kecamatan" class="content-section" style="padding: 0; background: transparent; box-shadow: none;">
+            <div class="map-container" style="height: 100vh; padding: 0; background: white; border-radius: 0;">
+                <iframe id="kecamatan-map" src="Peta-Kecamatan/index.html" style="width: 100%; height: 100%; border: none; border-radius: 0;" title="Peta Kecamatan"></iframe>
             </div>
         </section>
 
         <section id="tentang" class="content-section">
-            <h2 class="section-title"><i class="fas fa-user-circle"></i> Data Diri Pengembang</h2>
+            <h2 class="section-title"><i class="fas fa-info-circle"></i> Tentang Desa dan Kecamatan</h2>
 
-            <div class="profile-card">
-                <div class="profile-photo-container">
-                    <img src="cahya_profil.jpg.jpeg" alt="Foto Profil Cahya Dwi Karmila">
+            <div class="info-detail-card" style="margin-bottom: 2rem;">
+                <h4><i class="fas fa-flag"></i> Visi Desa Karanglewas Kidul</h4>
+                <p style="font-style: italic; font-size: 1.1rem; color: var(--primary-color); font-weight: 500;">
+                    "Terwujudnya Desa Karanglewas Kidul yang Maju, Sejahtera, dan Religius melalui Pembangunan 
+                    yang Berkelanjutan dan Berbasis Teknologi Informasi"
+                </p>
+            </div>
+
+            <h3 style="color: var(--primary-color); font-size: 1.8rem; margin: 2rem 0 1rem;">
+                <i class="fas fa-bullseye"></i> Misi Desa
+            </h3>
+            <div class="info-card-grid">
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-users"></i> Pemberdayaan Masyarakat</h4>
+                    <p>
+                        Meningkatkan kualitas sumber daya manusia melalui pendidikan, pelatihan, dan pembinaan 
+                        yang berkelanjutan untuk mengembangkan potensi masyarakat.
+                    </p>
                 </div>
-                
-                <h3>Cahya Dwi Karmila</h3>
-                <p class="title">NIM: 23SA21A171</p>
-                
-                <ul class="biodata-list">
-                    <li><strong>Tempat, Tanggal Lahir:</strong> <span>Jakarta, 28 Maret 2005</span></li>
-                    <li><strong>Alamat:</strong> <span>Jl. Lurah Wiryadrana RT 04 RW 01</span></li>
-                    <li><strong>Pendidikan:</strong> <span>S1 Sistem Informasi</span></li>
-                    <li><strong>Email:</strong> <span>cahyadwikarmila28@gmail.com</span></li>
-                    <li><strong>WhatsApp/Telepon:</strong> <span>0896-6629-4701</span></li>
-                    <li><strong>Instagram:</strong> <span>Chamyilaa</span></li>
-                </ul>
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-chart-line"></i> Pembangunan Ekonomi</h4>
+                    <p>
+                        Mengembangkan ekonomi desa melalui pemberdayaan UMKM, pertanian, dan peternakan dengan 
+                        memanfaatkan teknologi tepat guna.
+                    </p>
+                </div>
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-road"></i> Infrastruktur</h4>
+                    <p>
+                        Membangun dan memperbaiki infrastruktur desa termasuk jalan, jembatan, irigasi, dan 
+                        fasilitas umum lainnya.
+                    </p>
+                </div>
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-hands-helping"></i> Pelayanan Publik</h4>
+                    <p>
+                        Meningkatkan kualitas pelayanan publik yang cepat, mudah, dan transparan berbasis 
+                        teknologi informasi.
+                    </p>
+                </div>
+            </div>
+
+            <h3 style="color: var(--primary-color); font-size: 1.8rem; margin: 3rem 0 1rem;">
+                <i class="fas fa-city"></i> Kecamatan Karanglewas
+            </h3>
+            
+            <div class="info-detail-card" style="margin-bottom: 2rem;">
+                <h4><i class="fas fa-map-marked-alt"></i> Profil Kecamatan</h4>
+                <p>
+                    Kecamatan Karanglewas adalah salah satu dari 27 kecamatan di Kabupaten Banyumas, Jawa Tengah. 
+                    Terletak di bagian selatan kabupaten, kecamatan ini terdiri dari 4 desa: Karanglewas Kidul, 
+                    Kediri, Pangebatan, dan Tamansari. Kecamatan ini memiliki potensi besar di sektor pertanian 
+                    dengan lahan persawahan yang luas dan sistem irigasi yang baik. Topografi yang relatif datar 
+                    membuat wilayah ini sangat cocok untuk pengembangan pertanian padi, palawija, dan hortikultura.
+                </p>
+            </div>
+
+            <div class="info-card-grid">
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-seedling"></i> Potensi Pertanian</h4>
+                    <p>
+                        Kecamatan Karanglewas dikenal sebagai salah satu sentra produksi padi di Kabupaten Banyumas. 
+                        Dengan sistem irigasi teknis yang baik, produktivitas pertanian di wilayah ini cukup tinggi. 
+                        Selain padi, masyarakat juga mengembangkan tanaman palawija dan hortikultura.
+                    </p>
+                </div>
+
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-industry"></i> UMKM dan Industri</h4>
+                    <p>
+                        Berkembangnya UMKM di berbagai sektor seperti makanan, kerajinan, dan jasa. Terdapat juga 
+                        industri kecil dan menengah yang menyerap tenaga kerja lokal dan berkontribusi pada 
+                        perekonomian daerah.
+                    </p>
+                </div>
+
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-graduation-cap"></i> Pendidikan dan Budaya</h4>
+                    <p>
+                        Kecamatan ini memiliki fasilitas pendidikan yang lengkap dari tingkat TK hingga SMP, serta 
+                        beberapa pondok pesantren. Kehidupan budaya dan religius sangat kental dengan berbagai 
+                        kegiatan kemasyarakatan yang rutin dilaksanakan.
+                    </p>
+                </div>
+
+                <div class="info-detail-card">
+                    <h4><i class="fas fa-hospital-alt"></i> Kesehatan dan Kesejahteraan</h4>
+                    <p>
+                        Tersedia berbagai fasilitas kesehatan termasuk puskesmas, posyandu, dan bidan desa yang 
+                        melayani kebutuhan kesehatan masyarakat. Program kesejahteraan sosial juga aktif berjalan 
+                        untuk meningkatkan kualitas hidup warga.
+                    </p>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin-top: 2rem;">
+                <h4><i class="fas fa-lightbulb"></i> Portal Informasi Geografis</h4>
+                <p>
+                    Portal ini dikembangkan sebagai bagian dari upaya digitalisasi pelayanan publik dan penyediaan 
+                    informasi geografis yang akurat dan mudah diakses. Dengan memanfaatkan teknologi Sistem Informasi 
+                    Geografis (SIG), masyarakat dapat mengakses informasi terkait batas wilayah, fasilitas umum, 
+                    dan potensi desa secara interaktif. Portal ini diharapkan dapat mendukung perencanaan pembangunan 
+                    yang lebih baik dan meningkatkan transparansi pemerintahan desa.
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%); border-radius: 15px; color: white;">
+                <h4 style="margin-bottom: 1rem; font-size: 1.5rem;">
+                    <i class="fas fa-envelope"></i> Hubungi Kami
+                </h4>
+                <p style="margin-bottom: 0.5rem;">
+                    <i class="fas fa-map-marker-alt"></i> Kantor Desa Karanglewas Kidul, Kecamatan Karanglewas
+                </p>
+                <p style="margin-bottom: 0.5rem;">
+                    <i class="fas fa-phone"></i> (0281) XXX-XXXX
+                </p>
+                <p>
+                    <i class="fas fa-envelope"></i> karanglewaskidul@banyumaskab.go.id
+                </p>
             </div>
         </section>
 
@@ -260,7 +398,7 @@
     
     <footer>
         <div style="max-width: 1200px; margin: 0 auto;">
-            <p>&copy; 2025 Karanglewas Kidul. Dibuat oleh Cahya Dwi Karmila. All rights reserved.</p>
+            <p>&copy; 2025 Karanglewas Kidul. Portal Informasi Geografis Desa. All rights reserved.</p>
         </div>
     </footer>
 

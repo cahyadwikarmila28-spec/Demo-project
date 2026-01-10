@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <title>WebGIS Desa Karanglewas Kidul</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --primary: #2563eb; 
+            --primary-dark: #1e40af;
+            --dark: #0f172a; 
+            --shadow: 0 10px 30px rgba(0,0,0,0.3); 
+        }
+        
+        html, body, #map { 
+            width: 100%; 
+            height: 100%; 
+            padding: 0; 
+            margin: 0; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            overflow: hidden; 
+            background: #f8fafc !important; 
+        }
+
+        .ui-header {
+            position: absolute; top: 20px; left: 20px; right: 20px;
+            display: flex; align-items: center; gap: 12px; z-index: 3000; pointer-events: none;
+        }
+        .search-container {
+            background: #ffffff; border-radius: 12px; box-shadow: var(--shadow);
+            display: flex; align-items: center; padding: 0 18px;
+            flex-grow: 1; max-width: 450px; pointer-events: auto; position: relative;
+            border: 2px solid var(--primary);
+        }
+        .search-container input { 
+            border: none; outline: none; width: 100%; padding: 14px 0; 
+            font-size: 14px; font-weight: 600; color: #1e293b; background: transparent;
+        }
+        
+        .results-box {
+            position: absolute; top: 60px; left: 0; right: 0; background: #ffffff;
+            border-radius: 12px; max-height: 250px; overflow-y: auto; box-shadow: var(--shadow);
+            display: none; border: 1px solid #e2e8f0; z-index: 3001;
+        }
+        .res-item { 
+            padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; 
+            font-size: 13px; font-weight: 600; border-bottom: 1px solid #f1f5f9; color: #334155;
+        }
+        .res-item:hover { background: #dbeafe; color: var(--primary); }
+
+        .btn-menu {
+            background: var(--primary); color: #ffffff; border: none; width: 50px; height: 50px;
+            border-radius: 12px; box-shadow: var(--shadow); cursor: pointer; pointer-events: auto; font-size: 18px;
+            transition: all 0.2s;
+        }
+        .btn-menu:hover { background: var(--primary-dark); }
+
+        .sidebar {
+            position: absolute; top: 85px; left: 20px; width: 300px;
+            background: #ffffff; border-radius: 16px; box-shadow: var(--shadow);
+            z-index: 2500; display: none; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0;
+        }
+        .sidebar.active { display: flex; }
+        .sidebar-header { padding: 16px; background: var(--primary); color: #ffffff; font-weight: 800; font-size: 14px; }
+        .sidebar-body { padding: 12px; max-height: 50vh; overflow-y: auto; }
+
+        .layer-item {
+            display: flex; align-items: center; padding: 10px; margin-bottom: 6px;
+            border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; cursor: pointer;
+            transition: 0.2s;
+        }
+        .layer-item:hover { background: #f1f5f9; border-color: var(--primary); }
+        .layer-item label { flex: 1; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; cursor: pointer; color: #475569; }
+
+        .map-icon { text-align: center; }
+        .map-icon i { 
+            font-size: 22px; 
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+            -webkit-text-stroke: 1px #fff;
+        }
+
+        .balai-desa-label {
+            background: var(--primary);
+            border: 2px solid #fff;
+            border-radius: 6px;
+            color: #fff;
+            font-weight: 800;
+            padding: 3px 8px;
+            font-size: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .compass {
+            position: absolute; top: 20px; right: 20px; z-index: 2000;
+            background: white; width: 55px; height: 55px; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            box-shadow: var(--shadow); border: 2px solid var(--primary);
+        }
+
+        .custom-controls {
+            position: absolute; bottom: 30px; left: 20px; z-index: 2000;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .control-btn {
+            width: 45px; height: 45px; background: white; border: none; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+            color: var(--primary); cursor: pointer; box-shadow: var(--shadow); font-weight: bold;
+            transition: 0.2s;
+        }
+        .control-btn:hover { background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="ui-header">
+        <div class="search-container">
+            <i class="fas fa-search" style="color:var(--primary); margin-right:12px"></i>
+            <input type="text" id="main-search" placeholder="Cari lokasi di Desa Karanglewas Kidul..." autocomplete="off">
+            <div id="search-results" class="results-box"></div>
+        </div>
+        <button class="btn-menu" onclick="toggleSidebar()"><i class="fas fa-layer-group"></i></button>
+    </div>
+
+    <div class="compass">
+        <span style="color:#ef4444; font-size:10px; font-weight:900;">U</span>
+        <i class="fas fa-location-arrow" id="compass-needle" style="transform: rotate(-45deg); color: var(--primary);"></i>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">LAPISAN PETA DESA</div>
+        <div class="sidebar-body">
+            <p style="font-size: 10px; font-weight: 800; color: var(--primary); margin: 5px; text-transform: uppercase;">Dasar Peta</p>
+            <div class="layer-item" onclick="changeBase('hybrid')">
+                <input type="radio" name="bmap" id="rad-hyb" checked> <label for="rad-hyb"><i class="fas fa-globe"></i> Google Hybrid</label>
+            </div>
+            <div class="layer-item" onclick="changeBase('road')">
+                <input type="radio" name="bmap" id="rad-road"> <label for="rad-road"><i class="fas fa-map"></i> Google Maps</label>
+            </div>
+            <div class="layer-item" onclick="changeBase('sat')">
+                <input type="radio" name="bmap" id="rad-sat"> <label for="rad-sat"><i class="fas fa-satellite"></i> Satelit Polos</label>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
+            <p style="font-size: 10px; font-weight: 800; color: var(--primary); margin: 5px; text-transform: uppercase;">Data Spasial</p>
+            <div id="layer-container"></div>
+        </div>
+    </div>
+
+    <div class="custom-controls">
+        <button class="control-btn" onclick="map.zoomIn()" title="Perbesar"><i class="fas fa-plus"></i></button>
+        <button class="control-btn" onclick="map.zoomOut()" title="Perkecil"><i class="fas fa-minus"></i></button>
+        <button class="control-btn" onclick="goHome()" title="Kembali ke Tengah"><i class="fas fa-home"></i></button>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+    
+    <!-- Data Karanglewas Kidul -->
+    <script src="data/LAYERSEARCHKEY_3.js"></script>
+    <script src="data/Lahan_4.js"></script>
+    <script src="data/Empang_5.js"></script>
+    <script src="data/BatasRW6_6.js"></script>
+    <script src="data/BatasRW5_7.js"></script>
+    <script src="data/BatasRW4_8.js"></script>
+    <script src="data/BatasRW3_9.js"></script>
+    <script src="data/BatasRW2_10.js"></script>
+    <script src="data/BatasRW1_11.js"></script>
+    <script src="data/BatasRT9RW5_12.js"></script>
+    <script src="data/BatasRT8RW5_13.js"></script>
+    <script src="data/BatasRT7RW5_14.js"></script>
+    <script src="data/BatasRT7RW3_15.js"></script>
+    <script src="data/BatasRT6RW5_16.js"></script>
+    <script src="data/BatasRT6RW3_17.js"></script>
+    <script src="data/BatasRT5RW6_18.js"></script>
+    <script src="data/BatasRT5RW5_19.js"></script>
+    <script src="data/BatasRT5RW4_20.js"></script>
+    <script src="data/BatasRT5RW3_21.js"></script>
+    <script src="data/BatasRT5RW1_22.js"></script>
+    <script src="data/BatasRT4RW6_23.js"></script>
+    <script src="data/BatasRT4RW5_24.js"></script>
+    <script src="data/BatasRT4RW4_25.js"></script>
+    <script src="data/BatasRT4RW3_26.js"></script>
+    <script src="data/BatasRT4RW2_27.js"></script>
+    <script src="data/BatasRT4RW1_28.js"></script>
+    <script src="data/BatasRT3RW6_29.js"></script>
+    <script src="data/BatasRT3RW5_30.js"></script>
+    <script src="data/BatasRT3RW4_31.js"></script>
+    <script src="data/BatasRT3RW3_32.js"></script>
+    <script src="data/BatasRT3RW2_33.js"></script>
+    <script src="data/BatasRT3RW1_34.js"></script>
+    <script src="data/BatasRT2RW6_35.js"></script>
+    <script src="data/BatasRT2RW5_36.js"></script>
+    <script src="data/BatasRT2RW4_37.js"></script>
+    <script src="data/BatasRT2RW3_38.js"></script>
+    <script src="data/BatasRT2RW2_39.js"></script>
+    <script src="data/BatasRT2RW1_40.js"></script>
+    <script src="data/BatasRT1RW6_41.js"></script>
+    <script src="data/BatasRT1RW5_42.js"></script>
+    <script src="data/BatasRT1RW4_43.js"></script>
+    <script src="data/BatasRT1RW3_44.js"></script>
+    <script src="data/BatasRT1RW2_45.js"></script>
+    <script src="data/BatasRT1RW1_46.js"></script>
+    <script src="data/SungaiPL_47.js"></script>
+    <script src="data/Perumahan_48.js"></script>
+    <script src="data/Bangunan_49.js"></script>
+    <script src="data/SungaiLN_50.js"></script>
+    <script src="data/BatasJalan_51.js"></script>
+    <script src="data/UMKM_52.js"></script>
+    <script src="data/TempatWisata_53.js"></script>
+    <script src="data/TempatIbadah_54.js"></script>
+    <script src="data/RumahSaya_55.js"></script>
+    <script src="data/RumahPakKades_56.js"></script>
+    <script src="data/RumahKetuaRW1_57.js"></script>
+    <script src="data/RumahKetuaRT_58.js"></script>
+    <script src="data/PointLapangan_59.js"></script>
+    <script src="data/FasilitasPendidikan_60.js"></script>
+    <script src="data/BalaiDesa_61.js"></script>
+    <script src="data/Alfamart_62.js"></script>
+
+    <script>
+        const homePos = [-7.427905562949652, 109.20270576128959];
+        const homeZoom = 15;
+
+        var map = L.map('map', { 
+            zoomControl: false, 
+            maxZoom: 28 
+        }).setView(homePos, homeZoom);
+        
+        var gHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            maxZoom: 28, maxNativeZoom: 22, zIndex: 1
+        }).addTo(map);
+
+        var gRoad = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            maxZoom: 28, maxNativeZoom: 22, zIndex: 1
+        });
+        
+        var gSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 28, maxNativeZoom: 22, zIndex: 1
+        });
+
+        function changeBase(mode) {
+            map.removeLayer(gHybrid);
+            map.removeLayer(gRoad);
+            map.removeLayer(gSat);
+            
+            if(mode==='hybrid') map.addLayer(gHybrid);
+            else if(mode==='road') map.addLayer(gRoad);
+            else map.addLayer(gSat);
+        }
+
+        function goHome() {
+            map.flyTo(homePos, homeZoom);
+        }
+
+        var searchDatabase = [];
+        var layers = {}; 
+        var highlightedLayer = null;
+
+        function addLayerFinal(data, name, icon, color, isPoint, isImportant) {
+            if (typeof data === 'undefined') return;
+
+            var lyr = L.geoJson(data, {
+                style: function(f) {
+                    var zoom = map.getZoom();
+                    
+                    // Batas RW - Blue Gradient Theme
+                    if (name.includes('Batas RW') && !name.includes('Batas RT')) {
+                        var fillOp = zoom >= 16 ? 0.25 : 0.45;
+                        var borderOp = 1.0;
+                        return { 
+                            color: '#b0ab7e',
+                            weight: 2.5, 
+                            fillOpacity: fillOp, 
+                            fillColor: color, 
+                            opacity: borderOp 
+                        };
+                    }
+                    
+                    // Batas RT - Light Blue
+                    if (name.includes('Batas RT')) {
+                        var fillOp = zoom >= 16 ? 0.25 : 0.45;
+                        return { 
+                            color: '#a4a281',
+                            weight: 1.5, 
+                            fillOpacity: fillOp, 
+                            fillColor: color, 
+                            opacity: 1.0
+                        };
+                    }
+                    
+                    // Sungai Area - Cyan/Aqua
+                    if (name === 'Sungai (Area)') {
+                        return { 
+                            color: '#0891b2',
+                            weight: 1.5, 
+                            fillOpacity: 0.65,
+                            fillColor: '#a5f3fc',
+                            opacity: 1
+                        };
+                    }
+                    
+                    // Sungai Garis - Cyan
+                    if (name === 'Sungai (Garis)') {
+                        return { 
+                            color: '#06b6d4', 
+                            weight: 1.5, 
+                            opacity: 1
+                        };
+                    }
+                    
+                    // Jalan - Dark Gray/Brown
+                    if (name === 'Jalan') {
+                        return { 
+                            color: '#57534e', 
+                            weight: 1.8, 
+                            opacity: 1,
+                            fillOpacity: 0
+                        };
+                    }
+                    
+                    // Lahan - Green
+                    if (name === 'Lahan') {
+                        return { 
+                            color: '#16a34a',
+                            weight: 1.0, 
+                            fillOpacity: 0.6,
+                            fillColor: color,
+                            opacity: 0.8
+                        };
+                    }
+                    
+                    // Bangunan/Perumahan - Gray/Beige
+                    if (name === 'Bangunan' || name === 'Perumahan') {
+                        return { 
+                            color: '#78716c',
+                            weight: 1.0, 
+                            fillOpacity: 0.65,
+                            fillColor: color,
+                            opacity: 0.9
+                        };
+                    }
+                    
+                    // Empang - Aqua
+                    if (name === 'Empang') {
+                        return { 
+                            color: '#0891b2',
+                            weight: 1.2, 
+                            fillOpacity: 0.5,
+                            fillColor: color,
+                            opacity: 0.9
+                        };
+                    }
+
+                    return { 
+                        color: color, 
+                        weight: 2, 
+                        fillOpacity: 0.6, 
+                        fillColor: color,
+                        opacity: 1
+                    };
+                },
+                pointToLayer: function(f, latlng) {
+                    if(!isPoint) return;
+                    
+                    var label = f.properties.Nama || 
+                               f.properties.nama || 
+                               f.properties.Desa || 
+                               f.properties.Name || 
+                               name;
+                    
+                    searchDatabase.push({ name: label, latlng: latlng, icon: icon });
+                    
+                    var marker = L.marker(latlng, {
+                        icon: L.divIcon({
+                            className: 'map-icon', 
+                            html: `<i class="fas ${icon}" style="color:${color}"></i>`,
+                            iconSize: [30, 30], 
+                            iconAnchor: [15, 15]
+                        })
+                    });
+                    
+                    if(isImportant) {
+                        marker.bindTooltip(label, { 
+                            permanent: true, 
+                            direction: 'bottom', 
+                            className: 'balai-desa-label', 
+                            offset: [0, 10] 
+                        });
+                    }
+                    
+                    return marker;
+                },
+                onEachFeature: function(f, l) {
+                    var popName = f.properties.Nama || 
+                                 f.properties.nama ||
+                                 f.properties['Batas RW'] || 
+                                 f.properties['Batas RT'] ||
+                                 f.properties.NAMOBJ ||
+                                 name;
+                    
+                    var popContent = `<div style="font-family:'Plus Jakarta Sans'; min-width: 150px;">
+                                        <b style="color: var(--primary); font-size: 14px;">${name}</b><br>
+                                        <span style="font-size: 12px;">${popName}</span>`;
+                    
+                    if(f.properties.Desa) {
+                        popContent += `<br><small style="color: #64748b;">Desa: ${f.properties.Desa}</small>`;
+                    }
+                    
+                    popContent += `</div>`;
+                    l.bindPopup(popContent);
+                    
+                    if(name.includes('Batas RW') || name.includes('Batas RT')) {
+                        l.on('click', function(e) {
+                            if(highlightedLayer) {
+                                layers[highlightedLayer.layerName].lyr.resetStyle(highlightedLayer);
+                            }
+                            
+                            highlightedLayer = e.target;
+                            highlightedLayer.layerName = name;
+                            highlightedLayer.setStyle({
+                                fillColor: '#60a5fa',
+                                fillOpacity: 0.75,
+                                color: '#2563eb',
+                                weight: 4,
+                                opacity: 1
+                            });
+                            
+                            highlightedLayer.openPopup();
+                        });
+                        
+                        l.on('popupclose', function() {
+                            if(highlightedLayer) {
+                                layers[highlightedLayer.layerName].lyr.resetStyle(highlightedLayer);
+                                highlightedLayer = null;
+                            }
+                        });
+                    }
+                }
+            });
+
+            if(isImportant || (name.includes('Batas') || name === 'Jalan' || name.includes('Sungai'))) {
+                lyr.addTo(map);
+            }
+            
+            layers[name] = { 
+                lyr: lyr, 
+                isImportant: isImportant, 
+                isPoint: isPoint, 
+                color: color,
+                visible: true
+            };
+
+            var row = document.createElement('div');
+            row.className = 'layer-item';
+            var safeName = name.replace(/\s/g, '').replace(/\(/g, '').replace(/\)/g, '');
+            row.innerHTML = `<input type="checkbox" checked id="chk-${safeName}">
+                             <label for="chk-${safeName}"><i class="fas ${icon}" style="color:${color}"></i> ${name}</label>`;
+            
+            row.querySelector('input').onchange = function() {
+                layers[name].visible = this.checked;
+                updateVisibility(); 
+            };
+            
+            document.getElementById('layer-container').appendChild(row);
+        }
+
+        // Tambahkan layer dengan BLUE THEME - berbeda dari Tamansari (purple) dan Pangebatan (green)
+        // Batas RW dengan gradasi biru
+        addLayerFinal(json_BatasRW1_11, 'Batas RW 1', 'fa-draw-polygon', '#dbeafe', false, false);
+        addLayerFinal(json_BatasRW2_10, 'Batas RW 2', 'fa-draw-polygon', '#bfdbfe', false, false);
+        addLayerFinal(json_BatasRW3_9, 'Batas RW 3', 'fa-draw-polygon', '#93c5fd', false, false);
+        addLayerFinal(json_BatasRW4_8, 'Batas RW 4', 'fa-draw-polygon', '#60a5fa', false, false);
+        addLayerFinal(json_BatasRW5_7, 'Batas RW 5', 'fa-draw-polygon', '#3b82f6', false, false);
+        addLayerFinal(json_BatasRW6_6, 'Batas RW 6', 'fa-draw-polygon', '#2563eb', false, false);
+
+        // Batas RT dengan warna biru muda
+        addLayerFinal(json_BatasRT1RW1_46, 'Batas RT 1 RW 1', 'fa-draw-polygon', '#eff6ff', false, false);
+        addLayerFinal(json_BatasRT2RW1_40, 'Batas RT 2 RW 1', 'fa-draw-polygon', '#e0f2fe', false, false);
+        addLayerFinal(json_BatasRT3RW1_34, 'Batas RT 3 RW 1', 'fa-draw-polygon', '#dbeafe', false, false);
+        addLayerFinal(json_BatasRT4RW1_28, 'Batas RT 4 RW 1', 'fa-draw-polygon', '#bfdbfe', false, false);
+        addLayerFinal(json_BatasRT5RW1_22, 'Batas RT 5 RW 1', 'fa-draw-polygon', '#93c5fd', false, false);
+        
+        addLayerFinal(json_BatasRT1RW2_45, 'Batas RT 1 RW 2', 'fa-draw-polygon', '#eff6ff', false, false);
+        addLayerFinal(json_BatasRT2RW2_39, 'Batas RT 2 RW 2', 'fa-draw-polygon', '#e0f2fe', false, false);
+        addLayerFinal(json_BatasRT3RW2_33, 'Batas RT 3 RW 2', 'fa-draw-polygon', '#dbeafe', false, false);
+        addLayerFinal(json_BatasRT4RW2_27, 'Batas RT 4 RW 2', 'fa-draw-polygon', '#bfdbfe', false, false);
+        
+        addLayerFinal(json_BatasRT1RW3_44, 'Batas RT 1 RW 3', 'fa-draw-polygon', '#eff6ff', false, false);
+        addLayerFinal(json_BatasRT2RW3_38, 'Batas RT 2 RW 3', 'fa-draw-polygon', '#e0f2fe', false, false);
+        addLayerFinal(json_BatasRT3RW3_32, 'Batas RT 3 RW 3', 'fa-draw-polygon', '#dbeafe', false, false);
+        addLayerFinal(json_BatasRT4RW3_26, 'Batas RT 4 RW 3', 'fa-draw-polygon', '#bfdbfe', false, false);
+        addLayerFinal(json_BatasRT5RW3_21, 'Batas RT 5 RW 3', 'fa-draw-polygon', '#93c5fd', false, false);
+        addLayerFinal(json_BatasRT6RW3_17, 'Batas RT 6 RW 3', 'fa-draw-polygon', '#60a5fa', false, false);
+        addLayerFinal(json_BatasRT7RW3_15, 'Batas RT 7 RW 3', 'fa-draw-polygon', '#3b82f6', false, false);
+        
+        addLayerFinal(json_BatasRT1RW4_43, 'Batas RT 1 RW 4', 'fa-draw-polygon', '#eff6ff', false, false);
+        addLayerFinal(json_BatasRT2RW4_37, 'Batas RT 2 RW 4', 'fa-draw-polygon', '#e0f2fe', false, false);
+        addLayerFinal(json_BatasRT3RW4_31, 'Batas RT 3 RW 4', 'fa-draw-polygon', '#dbeafe', false, false);
+        addLayerFinal(json_BatasRT4RW4_25, 'Batas RT 4 RW 4', 'fa-draw-polygon', '#bfdbfe', false, false);
+        addLayerFinal(json_BatasRT5RW4_20, 'Batas RT 5 RW 4', 'fa-draw-polygon', '#93c5fd', false, false);
+        
+        addLayerFinal(json_BatasRT1RW5_42, 'Batas RT 1 RW 5', 'fa-draw-polygon', '#eff6ff', false, false);
+        addLayerFinal(json_BatasRT2RW5_36, 'Batas RT 2 RW 5', 'fa-draw-polygon', '#e0f2fe', false, false);
+        addLayerFinal(json_BatasRT3RW5_30, 'Batas RT 3 RW 5', 'fa-draw-polygon', '#dbeafe', false, false);
+        addLayerFinal(json_BatasRT4RW5_24, 'Batas RT 4 RW 5', 'fa-draw-polygon', '#bfdbfe', false, false);
+        addLayerFinal(json_BatasRT5RW5_19, 'Batas RT 5 RW 5', 'fa-draw-polygon', '#93c5fd', false, false);
+        addLayerFinal(json_BatasRT6RW5_16, 'Batas RT 6 RW 5', 'fa-draw-polygon', '#60a5fa', false, false);
+        addLayerFinal(json_BatasRT7RW5_14, 'Batas RT 7 RW 5', 'fa-draw-polygon', '#3b82f6', false, false);
+        addLayerFinal(json_BatasRT8RW5_13, 'Batas RT 8 RW 5', 'fa-draw-polygon', '#2563eb', false, false);
+        addLayerFinal(json_BatasRT9RW5_12, 'Batas RT 9 RW 5', 'fa-draw-polygon', '#1d4ed8', false, false);
+        
+        addLayerFinal(json_BatasRT1RW6_41, 'Batas RT 1 RW 6', 'fa-draw-polygon', '#eff6ff', false, false);
+        addLayerFinal(json_BatasRT2RW6_35, 'Batas RT 2 RW 6', 'fa-draw-polygon', '#e0f2fe', false, false);
+        addLayerFinal(json_BatasRT3RW6_29, 'Batas RT 3 RW 6', 'fa-draw-polygon', '#dbeafe', false, false);
+        addLayerFinal(json_BatasRT4RW6_23, 'Batas RT 4 RW 6', 'fa-draw-polygon', '#bfdbfe', false, false);
+        addLayerFinal(json_BatasRT5RW6_18, 'Batas RT 5 RW 6', 'fa-draw-polygon', '#93c5fd', false, false);
+
+        // Layer lainnya dengan warna yang disesuaikan
+        addLayerFinal(json_Lahan_4, 'Lahan', 'fa-seedling', '#86efac', false, false);
+        addLayerFinal(json_Empang_5, 'Empang', 'fa-water', '#67e8f9', false, false);
+        addLayerFinal(json_Bangunan_49, 'Bangunan', 'fa-building', '#d6c4ae', false, false);
+        addLayerFinal(json_Perumahan_48, 'Perumahan', 'fa-home', '#c4b5a0', false, false);
+        addLayerFinal(json_SungaiPL_47, 'Sungai (Area)', 'fa-water', '#a5f3fc', false, false);
+        addLayerFinal(json_SungaiLN_50, 'Sungai (Garis)', 'fa-water', '#06b6d4', false, false);
+        addLayerFinal(json_BatasJalan_51, 'Jalan', 'fa-road', '#57534e', false, false);
+
+        // Point layers dengan warna yang disesuaikan
+        addLayerFinal(json_BalaiDesa_61, 'Balai Desa', 'fa-university', '#2563eb', true, true);
+        addLayerFinal(json_FasilitasPendidikan_60, 'Fasilitas Pendidikan', 'fa-graduation-cap', '#8b5cf6', true, false);
+        addLayerFinal(json_TempatIbadah_54, 'Tempat Ibadah', 'fa-mosque', '#059669', true, false);
+        addLayerFinal(json_UMKM_52, 'UMKM', 'fa-store', '#ea580c', true, false);
+        addLayerFinal(json_TempatWisata_53, 'Tempat Wisata', 'fa-map-marked-alt', '#0891b2', true, false);
+        addLayerFinal(json_Alfamart_62, 'Alfamart', 'fa-shopping-cart', '#dc2626', true, false);
+        addLayerFinal(json_PointLapangan_59, 'Lapangan', 'fa-futbol', '#16a34a', true, false);
+        addLayerFinal(json_RumahSaya_55, 'Rumah Saya', 'fa-home', '#f59e0b', true, false);
+        addLayerFinal(json_RumahPakKades_56, 'Rumah Pak Kades', 'fa-home', '#a855f7', true, false);
+        addLayerFinal(json_RumahKetuaRW1_57, 'Rumah Ketua RW', 'fa-home', '#ec4899', true, false);
+        addLayerFinal(json_RumahKetuaRT_58, 'Rumah Ketua RT', 'fa-home', '#14b8a6', true, false);
+
+        function updateVisibility() {
+            var zoom = map.getZoom();
+            
+            for (var key in layers) {
+                var layerObj = layers[key];
+                
+                if (!layerObj.visible) {
+                    map.removeLayer(layerObj.lyr);
+                    continue;
+                }
+                
+                // Batas RW, RT, Sungai, Jalan, Lahan, Bangunan, Perumahan, Empang selalu tampil
+                if (key.includes('Batas') || key === 'Jalan' || key.includes('Sungai') || 
+                    key === 'Lahan' || key === 'Bangunan' || key === 'Perumahan' || key === 'Empang') {
+                    map.addLayer(layerObj.lyr);
+                    
+                    // Update style untuk Batas RW berdasarkan zoom
+                    if (key.includes('Batas RW') && !key.includes('Batas RT')) {
+                        layerObj.lyr.setStyle(function(feature) {
+                            if(highlightedLayer && highlightedLayer.feature === feature) {
+                                return;
+                            }
+                            
+                            var fillOp = zoom >= 16 ? 0.25 : 0.45;
+                            var borderOp = 1.0;
+                            return {
+                                color: '#1d4ed8',
+                                weight: 2.5, 
+                                fillOpacity: fillOp, 
+                                fillColor: layerObj.color, 
+                                opacity: borderOp
+                            };
+                        });
+                    }
+                    
+                    // Update style untuk Batas RT berdasarkan zoom
+                    if (key.includes('Batas RT')) {
+                        layerObj.lyr.setStyle(function(feature) {
+                            if(highlightedLayer && highlightedLayer.feature === feature) {
+                                return;
+                            }
+                            
+                            var fillOp = zoom >= 16 ? 0.25 : 0.45;
+                            return {
+                                color: '#3b82f6',
+                                weight: 1.5, 
+                                fillOpacity: fillOp, 
+                                fillColor: layerObj.color, 
+                                opacity: 1.0
+                            };
+                        });
+                    }
+                } 
+                // Balai Desa selalu tampil dengan label
+                else if (layerObj.isImportant) {
+                    map.addLayer(layerObj.lyr);
+                } 
+                // Point lainnya hanya tampil saat zoom >= 16
+                else if (layerObj.isPoint) {
+                    if (zoom >= 16) { 
+                        map.addLayer(layerObj.lyr); 
+                    } else { 
+                        map.removeLayer(layerObj.lyr); 
+                    }
+                }
+            }
+        }
+
+        map.on('zoomend', updateVisibility);
+        
+        // Tambahkan layer dasar yang sudah ditandai dengan checked
+        for(var key in layers) {
+            if(layers[key].visible) {
+                map.addLayer(layers[key].lyr);
+            }
+        }
+        
+        updateVisibility(); 
+
+        // Search functionality
+        var sInp = document.getElementById('main-search'), 
+            sRes = document.getElementById('search-results');
+        
+        sInp.addEventListener('input', function() {
+            var val = this.value.toLowerCase(); 
+            sRes.innerHTML = '';
+            
+            if(val.length < 1) { 
+                sRes.style.display = 'none'; 
+                return; 
+            }
+            
+            var matches = searchDatabase.filter(i => i.name.toLowerCase().includes(val)).slice(0, 8);
+            
+            if(matches.length > 0) {
+                sRes.style.display = 'block';
+                matches.forEach(m => {
+                    var d = document.createElement('div'); 
+                    d.className = 'res-item';
+                    d.innerHTML = `<i class="fas ${m.icon}" style="color:var(--primary)"></i> ${m.name}`;
+                    d.onclick = function() {
+                        map.flyTo(m.latlng, 19);
+                        L.popup()
+                            .setLatLng(m.latlng)
+                            .setContent(`<b style="color: var(--primary);">${m.name}</b>`)
+                            .openOn(map);
+                        sRes.style.display = 'none'; 
+                        sInp.value = m.name;
+                    };
+                    sRes.appendChild(d);
+                });
+            } else {
+                sRes.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-container')) {
+                sRes.style.display = 'none';
+            }
+        });
+
+        function toggleSidebar() { 
+            document.getElementById('sidebar').classList.toggle('active'); 
+        }
+        
+        L.control.locate({ 
+            position: 'bottomright', 
+            drawCircle: false,
+            locateOptions: {maxZoom: 19}
+        }).addTo(map);
+    </script>
+</body>
+</html>

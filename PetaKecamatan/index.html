@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <title>WebGIS Karanglewas Kidul - Full Edition</title>
+    
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+    <link rel="stylesheet" href="css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --primary: #fbce07; 
+            --accent: #f59e0b;
+            --dark: #0f172a; 
+            --glass: rgba(255, 255, 255, 0.95);
+            --shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        html, body, #map { width: 100%; height: 100%; padding: 0; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: #000; overflow: hidden; }
+
+        /* UI HEADER & SEARCH */
+        .ui-header {
+            position: absolute; top: 20px; left: 20px; right: 20px;
+            display: flex; align-items: center; gap: 12px; z-index: 3000; pointer-events: none;
+        }
+        .search-container {
+            background: var(--glass); border-radius: 16px; box-shadow: var(--shadow);
+            display: flex; align-items: center; padding: 0 20px;
+            flex-grow: 1; max-width: 500px; pointer-events: auto; position: relative;
+            border: 2px solid var(--primary); backdrop-filter: blur(10px);
+        }
+        .search-container input { 
+            border: none; outline: none; width: 100%; padding: 18px 0; 
+            font-size: 15px; font-weight: 700; color: var(--dark); background: transparent;
+        }
+        .results-box {
+            position: absolute; top: 70px; left: 0; right: 0; background: var(--glass);
+            border-radius: 16px; max-height: 350px; overflow-y: auto; box-shadow: var(--shadow);
+            display: none; border: 1px solid #e2e8f0; z-index: 3001;
+        }
+        .res-item { padding: 15px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 700; color: var(--dark); border-bottom: 1px solid #f1f5f9; }
+        .res-item:hover { background: #fffbeb; color: var(--accent); }
+
+        .btn-menu {
+            background: var(--dark); color: var(--primary); border: none; width: 58px; height: 58px;
+            border-radius: 16px; box-shadow: var(--shadow); cursor: pointer; pointer-events: auto; font-size: 20px;
+        }
+
+        /* COMPASS / MATA ANGIN */
+        .compass-container {
+            position: absolute; bottom: 120px; right: 22px; z-index: 2000;
+            background: var(--glass); padding: 10px; border-radius: 50%;
+            border: 2px solid var(--primary); box-shadow: var(--shadow);
+        }
+        .compass-container i { font-size: 30px; color: var(--dark); }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: absolute; top: 90px; left: 20px; width: 340px;
+            background: var(--glass); border-radius: 20px; box-shadow: var(--shadow);
+            z-index: 2500; display: none; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+        .sidebar.active { display: flex; animation: slideIn 0.3s ease-out; }
+        .sidebar-header { padding: 20px; background: var(--dark); color: var(--primary); font-weight: 800; }
+        .sidebar-body { padding: 15px; max-height: 60vh; overflow-y: auto; }
+
+        .layer-item {
+            display: flex; align-items: center; padding: 12px; margin-bottom: 6px;
+            border-radius: 12px; background: #ffffff; border: 1px solid #f1f5f9; cursor: pointer;
+        }
+        .layer-item label { flex: 1; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--dark); }
+
+        .label-desa { background: none; border: none; font-size: 11px; font-weight: 900; color: #000; text-transform: uppercase; text-shadow: 2px 2px 0px #fff; pointer-events: none; }
+
+        .map-icon { text-align: center; transition: 0.5s; transform: scale(0); opacity: 0; }
+        .zoom-active { transform: scale(1); opacity: 1; }
+        .map-icon i { font-size: 24px; -webkit-text-stroke: 1px #000; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="ui-header">
+        <div class="search-container">
+            <i class="fas fa-search" style="color:var(--accent); margin-right:12px;"></i>
+            <input type="text" id="main-search" placeholder="Cari Desa, Sungai, atau Fasilitas..." autocomplete="off">
+            <div id="search-results" class="results-box"></div>
+        </div>
+        <button class="btn-menu" onclick="toggleSidebar()"><i class="fas fa-layer-group"></i></button>
+    </div>
+
+    <div class="compass-container">
+        <i class="fas fa-compass"></i>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">Pengaturan Peta</div>
+        <div class="sidebar-body">
+            <p style="font-size: 10px; font-weight: 800; color: var(--accent); margin-bottom: 10px; text-transform: uppercase;">Basemap</p>
+            <div class="layer-item" onclick="setBasemap('hybrid')">
+                <input type="radio" name="bmap" id="b1" checked> <label for="b1">Google Hybrid</label>
+            </div>
+            <div class="layer-item" onclick="setBasemap('sat')">
+                <input type="radio" name="bmap" id="b2"> <label for="b2">Google Satellite</label>
+            </div>
+            <div class="layer-item" onclick="setBasemap('map')">
+                <input type="radio" name="bmap" id="b3"> <label for="b3">Google Maps</label>
+            </div>
+            <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+            <p style="font-size: 10px; font-weight: 800; color: var(--accent); margin-bottom: 10px; text-transform: uppercase;">Layer Data</p>
+            <div id="layer-container"></div>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="js/leaflet.js"></script>
+    <script src="js/L.Control.Locate.min.js"></script>
+
+    <script src="data/BatasKcematanGaris_2.js"></script>
+    <script src="data/BatasDesaKaranglewasKidul_3.js"></script>
+    <script src="data/DusunKediri_4.js"></script>
+    <script src="data/Sungai_7.js"></script>
+    <script src="data/Jalan_13.js"></script>
+    <script src="data/Pemerintahan_8.js"></script>
+    <script src="data/Pendidikan_10.js"></script>
+    <script src="data/TempatIbadah_11.js"></script>
+
+    <script>
+        var map = L.map('map', { zoomControl: true, maxZoom: 28 }).setView([-7.419, 109.215], 14);
+        map.zoomControl.setPosition('bottomright');
+
+        // DAFTAR BASEMAP
+        var bmaps = {
+            'hybrid': L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'),
+            'sat': L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'),
+            'map': L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}')
+        };
+        bmaps['hybrid'].addTo(map);
+
+        function setBasemap(key) {
+            Object.values(bmaps).forEach(l => map.removeLayer(l));
+            bmaps[key].addTo(map);
+        }
+
+        var searchDatabase = [];
+        var lastClickedLayer = null;
+
+        // FUNGSI WARNA RANDOM/BERBEDA UNTUK TIAP DESA
+        function getColor(name) {
+            var colors = ['#e63946', '#2a9d8f', '#e9c46a', '#f4a261', '#e76f51', '#a8dadc', '#457b9d', '#9b5de5'];
+            var hash = 0;
+            for (var i = 0; i < name.length; i++) { hash = name.charCodeAt(i) + ((hash << 5) - hash); }
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function smartLayer(data, name, icon, isPoint, isLine, fixedColor) {
+            if (typeof data === 'undefined') return;
+
+            var lyr = L.geoJson(data, {
+                style: function(f) {
+                    var finalColor = fixedColor || getColor(f.properties.NAMOBJ || f.properties.Desa || name);
+                    return {
+                        color: isLine ? finalColor : '#333',
+                        weight: isLine ? 3 : 1.5,
+                        fillOpacity: isLine ? 1 : 0.6,
+                        fillColor: finalColor
+                    };
+                },
+                pointToLayer: function(f, latlng) {
+                    if(!isPoint) return;
+                    var label = f.properties.NAMOBJ || f.properties.Nama || name;
+                    searchDatabase.push({ name: label, latlng: latlng, icon: icon });
+                    return L.marker(latlng, {
+                        icon: L.divIcon({
+                            className: 'map-icon', 
+                            html: `<i class="fas ${icon}" style="color:${fixedColor || '#fff'}"></i>`,
+                            iconSize: [30, 30], iconAnchor: [15, 15]
+                        })
+                    });
+                },
+                onEachFeature: function(f, l) {
+                    var labelText = f.properties.NAMOBJ || f.properties.Desa || f.properties.Nama || name;
+                    l.bindPopup(`<b>${name}</b><br>${labelText}`);
+                    
+                    l.on('click', function(e) {
+                        if (lastClickedLayer) {
+                            lastClickedLayer.layer.setStyle({ fillOpacity: 0.6, color: '#333', weight: 1.5 });
+                        }
+                        if (!isPoint) {
+                            l.setStyle({ fillColor: '#fff', fillOpacity: 0.9, color: '#fff', weight: 3 });
+                            lastClickedLayer = { layer: l, feature: f };
+                        }
+                        L.DomEvent.stopPropagation(e);
+                    });
+
+                    if(!isPoint && !isLine && f.properties.NAMOBJ) {
+                        var center = l.getBounds().getCenter();
+                        searchDatabase.push({ name: f.properties.NAMOBJ, latlng: center, icon: 'fa-map' });
+                        L.marker(center, { icon: L.divIcon({ className: 'label-desa', html: f.properties.NAMOBJ, iconSize: [100, 20] }) }).addTo(map);
+                    }
+                }
+            }).addTo(map);
+
+            var row = document.createElement('div');
+            row.className = 'layer-item';
+            row.innerHTML = `<input type="checkbox" checked onchange="if(this.checked) map.addLayer(window['l_${name.replace(/\s/g, '')}']); else map.removeLayer(window['l_${name.replace(/\s/g, '')}']);">
+                             <label><i class="fas ${icon}"></i> ${name}</label>`;
+            document.getElementById('layer-container').appendChild(row);
+            window['l_'+name.replace(/\s/g, '')] = lyr;
+        }
+
+        // PEMANGGILAN LAYER
+        smartLayer(json_BatasKcematanGaris_2, 'Kecamatan', 'fa-map-marked-alt', false, false);
+        smartLayer(json_BatasDesaKaranglewasKidul_3, 'Batas Desa', 'fa-draw-polygon', false, false);
+        smartLayer(json_DusunKediri_4, 'Dusun Kediri', 'fa-vector-square', false, false);
+        
+        // SUNGAI & JALAN (DENGAN WARNA TETAP)
+        smartLayer(json_Sungai_7, 'Sungai', 'fa-water', false, true, '#00b4d8');
+        smartLayer(json_Jalan_13, 'Jalan Utama', 'fa-road', false, true, '#ffffff');
+
+        // POINT FASILITAS
+        smartLayer(json_Pemerintahan_8, 'Pemerintahan', 'fa-university', true, false, '#1d4ed8');
+        smartLayer(json_Pendidikan_10, 'Sekolah', 'fa-graduation-cap', true, false, '#7e22ce');
+        smartLayer(json_TempatIbadah_11, 'Tempat Ibadah', 'fa-mosque', true, false, '#15803d');
+
+        map.on('click', function() {
+            if (lastClickedLayer) {
+                window['l_BatasDesa'].resetStyle(lastClickedLayer.layer);
+                lastClickedLayer = null;
+            }
+        });
+
+        // SEARCH LOGIC
+        var sInp = document.getElementById('main-search');
+        var sRes = document.getElementById('search-results');
+        sInp.addEventListener('input', function() {
+            var val = this.value.toLowerCase();
+            sRes.innerHTML = '';
+            if(val.length < 1) { sRes.style.display = 'none'; return; }
+            var matches = searchDatabase.filter(i => i.name.toLowerCase().includes(val)).slice(0, 8);
+            if(matches.length > 0) {
+                sRes.style.display = 'block';
+                matches.forEach(m => {
+                    var d = document.createElement('div'); d.className = 'res-item';
+                    d.innerHTML = `<i class="fas ${m.icon}"></i> ${m.name}`;
+                    d.onclick = function() {
+                        map.flyTo(m.latlng, 18);
+                        L.popup().setLatLng(m.latlng).setContent("<b>" + m.name + "</b>").openOn(map);
+                        sRes.style.display = 'none';
+                    };
+                    sRes.appendChild(d);
+                });
+            }
+        });
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        function updateIcons() {
+            var z = map.getZoom();
+            document.querySelectorAll('.map-icon').forEach(i => {
+                if (z >= 16) i.classList.add('zoom-active');
+                else i.classList.remove('zoom-active');
+            });
+        }
+        map.on('zoomend', updateIcons);
+        updateIcons();
+        L.control.locate({ position: 'bottomright' }).addTo(map);
+    </script>
+</body>
+</html>
