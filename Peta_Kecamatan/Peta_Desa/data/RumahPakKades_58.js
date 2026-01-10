@@ -1,1 +1,0 @@
-var json_RumahPakKades_58 = {"type":"FeatureCollection","name":"RumahPakKades_58","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[{"type":"Feature","properties":{"id":"1","Nama":"Pak Kades Sisworo","SEARCHKEY":"Pak Kades Sisworo"},"geometry":{"type":"Point","coordinates":[109.198378005126258,-7.426797102429836]}}]}

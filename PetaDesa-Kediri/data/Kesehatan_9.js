@@ -1,1 +1,0 @@
-var json_Kesehatan_9 = {"type":"FeatureCollection","name":"Kesehatan_9","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[{"type":"Feature","properties":{"id":"3","Nama":"PKD Desa Kediri","Name":"PKD Desa Kediri"},"geometry":{"type":"Point","coordinates":[109.20567724480901,-7.444496092737033]}}]}

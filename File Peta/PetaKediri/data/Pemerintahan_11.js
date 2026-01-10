@@ -1,1 +1,0 @@
-var json_Pemerintahan_11 = {"type":"FeatureCollection","name":"Pemerintahan_11","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[{"type":"Feature","properties":{"id":"3","Nama":"Kantor Desa Kediri","Name":"Kantor Desa Kediri"},"geometry":{"type":"Point","coordinates":[109.205875417913006,-7.446392852124338]}}]}
